@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0e14">
+    <title>RepIA - Compteur d'exercices</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+    <style>
+        :root {
+            --bg: #0a0e14;
+            --bg-soft: #0f1520;
+            --card: #131a26;
+            --card-hover: #182033;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #eef2f8;
+            --text-dim: #93a0b0;
+            --accent: #ff8c42;
+            --accent-2: #ff5e3a;
+            --green: #3ddc84;
+            --blue: #4da3ff;
+            --orange: #ffc24b;
+            --red: #ff6b6b;
+            --radius: 18px;
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            background:
+                radial-gradient(900px 480px at 85% -10%, rgba(255, 94, 58, 0.14), transparent 60%),
+                radial-gradient(700px 400px at -10% 0%, rgba(77, 163, 255, 0.10), transparent 55%),
+                var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .wrap { max-width: 1000px; margin: 0 auto; padding: 24px 18px 44px; }
+
+        /* ---------- Header ---------- */
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .logo .mark {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            box-shadow: 0 4px 18px rgba(255, 94, 58, 0.35);
+        }
+
+        .logo .sub {
+            color: var(--accent);
+        }
+
+        .header-right { display: flex; align-items: center; gap: 10px; }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            padding: 8px 13px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.03);
+            white-space: nowrap;
+        }
+
+        .dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            background: var(--red);
+            box-shadow: 0 0 8px var(--red);
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        .dot.online { background: var(--green); box-shadow: 0 0 10px var(--green); }
+        .dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+        .cam-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #1a0d05;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 999px;
+            padding: 9px 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(255, 94, 58, 0.35);
+            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+            white-space: nowrap;
+        }
+        .cam-toggle:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .cam-toggle:active { transform: scale(0.96); }
+
+        /* ---------- Bannière d'erreur ---------- */
+
+        .cam-banner {
+            display: none;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.4);
+            color: #ffb4b4;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+        .cam-banner.visible { display: block; }
+
+        /* ---------- Sélecteur d'exercice ---------- */
+
+        .section-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            font-weight: 600;
+            margin: 4px 0 14px;
+        }
+
+        .exercises {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .exo {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(180deg, var(--card), var(--bg-soft));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 14px 16px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.16s, border-color 0.16s, box-shadow 0.16s;
+            user-select: none;
+        }
+        .exo:hover { transform: translateY(-4px); border-color: rgba(255, 140, 66, 0.5); }
+        .exo:active { transform: scale(0.97); }
+
+        .exo.active {
+            border-color: var(--accent);
+            box-shadow: 0 10px 34px rgba(255, 94, 58, 0.28), inset 0 0 0 1px rgba(255, 140, 66, 0.5);
+        }
+
+        .exo .icon {
+            width: 58px; height: 58px;
+            display: grid;
+            place-items: center;
+            font-size: 1.7rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            transition: background 0.16s;
+        }
+        .exo.active .icon { background: rgba(255, 140, 66, 0.16); border-color: rgba(255, 140, 66, 0.5); }
+
+        .exo .name { font-weight: 700; font-size: 1.02rem; }
+        .exo.active .name { color: var(--accent); }
+
+        .exo .desc { font-size: 0.76rem; color: var(--text-dim); text-align: center; line-height: 1.4; }
+
+        .exo .check {
+            position: absolute;
+            top: 10px; right: 10px;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 0.7rem;
+            color: #0a0e14;
+            background: var(--accent);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.16s, transform 0.16s;
+        }
+        .exo.active .check { opacity: 1; transform: scale(1); }
+
+        /* ---------- Zone principale ---------- */
+
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .video-wrap {
+            position: relative;
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .video-wrap canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 78vh;
+            object-fit: contain;
+            background: #000;
+        }
+
+        #video {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .video-top {
+            position: absolute;
+            top: 12px; left: 12px; right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text);
+            background: rgba(10, 14, 20, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 7px 12px;
+            border-radius: 999px;
+            backdrop-filter: blur(6px);
+        }
+        .chip .pulse { color: var(--green); }
+
+        .perf { font-variant-numeric: tabular-nums; }
+
+        .video-empty {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            z-index: 1;
+        }
+
+        /* ---------- Stats ---------- */
+
+        .stats { display: flex; flex-direction: column; gap: 12px; }
+
+        .stat {
+            background: linear-gradient(180deg, var(--card), var(--bg-soft));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .stat .info { min-width: 0; }
+
+        .stat .label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .stat .value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-top: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat .value.green  { color: var(--green); }
+        .stat .value.blue   { color: var(--blue); }
+        .stat .value.orange { color: var(--orange); }
+
+        .stat .icon {
+            width: 44px; height: 44px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .stat.reps .icon { background: rgba(61, 220, 132, 0.12); border-color: rgba(61, 220, 132, 0.4); }
+        .stat.pos .icon { background: rgba(77, 163, 255, 0.12); border-color: rgba(77, 163, 255, 0.4); }
+        .stat.angle .icon { background: rgba(255, 194, 75, 0.12); border-color: rgba(255, 194, 75, 0.4); }
+
+        .reset-btn {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 13px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s, color 0.15s;
+        }
+        .reset-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(255, 140, 66, 0.07); }
+        .reset-btn:active { transform: scale(0.98); }
+
+        .stats .hint {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            text-align: center;
+            line-height: 1.5;
+            padding: 0 8px;
+        }
+
+        /* ---------- Footer ---------- */
+
+        footer {
+            margin-top: 26px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.76rem;
+        }
+        footer .sep { opacity: 0.5; margin: 0 6px; }
+
+        @media (max-width: 860px) {
+            .main { grid-template-columns: 1fr; }
+            .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .stat { flex-direction: column; text-align: center; }
+            .stat .value { font-size: 1.7rem; }
+        }
+
+        @media (max-width: 560px) {
+            .wrap { padding: 18px 14px 36px; }
+            header { margin-bottom: 16px; }
+            .logo { font-size: 1.3rem; }
+            .logo .mark { width: 36px; height: 36px; font-size: 1.1rem; }
+
+            .status { padding: 7px 11px; font-size: 0.75rem; }
+            .cam-toggle { padding: 8px 13px; font-size: 0.8rem; }
+
+            .exercises { gap: 10px; }
+            .exo { padding: 16px 10px 13px; }
+            .exo .icon { width: 50px; height: 50px; font-size: 1.5rem; }
+            .exo .name { font-size: 0.95rem; }
+            .exo .desc { font-size: 0.7rem; }
+
+            .cam-toggle span { display: none; }
+
+            .stats { grid-template-columns: 1fr; }
+            .stat { flex-direction: row; text-align: left; }
+            .stat .value { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <div class="logo">
+                <span class="mark">🏋️</span>
+                <span>Rep<span class="sub">IA</span></span>
+            </div>
+            <div class="header-right">
+                <button class="cam-toggle" id="cam-toggle" type="button" title="Basculer caméra avant / arrière">📷<span>Caméra avant / arrière</span></button>
+                <div class="status">
+                    <span class="dot" id="dot"></span>
+                    <span id="status-text">Démarrage…</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="cam-banner" id="cam-banner">
+            ⚠️ Caméra indisponible &mdash; la détection ne peut pas démarrer.
+        </div>
+
+        <div class="section-title">Choisissez votre exercice</div>
+        <div class="exercises" id="exercises"></div>
+
+        <div class="main">
+            <div class="video-wrap">
+                <div class="video-top">
+                    <span class="chip">🎯 <strong id="exo-title">Pompes</strong></span>
+                    <span class="chip"><span class="pulse">●</span> en direct &nbsp;<span id="perf" class="perf"></span></span>
+                </div>
+                <video id="video" autoplay playsinline muted></video>
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <div class="stats">
+                <div class="stat reps">
+                    <div class="info">
+                        <div class="label">Répétitions</div>
+                        <div class="value green" id="compteur">0</div>
+                    </div>
+                    <div class="icon">💪</div>
+                </div>
+
+                <div class="stat pos">
+                    <div class="info">
+                        <div class="label">Position</div>
+                        <div class="value blue" id="stage">&mdash;</div>
+                    </div>
+                    <div class="icon">🧘</div>
+                </div>
+
+                <div class="stat angle">
+                    <div class="info">
+                        <div class="label">Angle coude</div>
+                        <div class="value orange" id="angle">&mdash;</div>
+                    </div>
+                    <div class="icon">📐</div>
+                </div>
+
+                <button class="reset-btn" id="reset-btn" type="button">🔄 Réinitialiser le compteur</button>
+                <div class="hint">
+                    Astuce : recule pour que tout ton corps soit visible,
+                    et reste de face face à la caméra.
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Détection 100 % dans ton navigateur &mdash; aucune image envoyée au serveur
+            <span class="sep">·</span> RepIA
+        </footer>
+    </div>
+
+    <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

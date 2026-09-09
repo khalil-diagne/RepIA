@@ -1,0 +1,8 @@
+venv
+.venv
+.dist
+__pycache__
+templates
+*.py
+*.md
+.git
