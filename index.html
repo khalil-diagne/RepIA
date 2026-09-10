@@ -3,26 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0a0e14">
-    <title>RepIA - Compteur d'exercices</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+    <meta name="theme-color" content="#090D16">
+    <title>RepIA — Compteur d'exercices</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310B981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6.5 6.5 11 11'/><path d='m21 21-1-1'/><path d='m3 3 1 1'/><path d='m18 22 4-4'/><path d='m2 6 4-4'/><path d='m3 10 7-7'/><path d='m14 21 7-7'/></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a0e14;
-            --bg-soft: #0f1520;
-            --card: #131a26;
-            --card-hover: #182033;
+            --bg: #090D16;
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-2: rgba(255, 255, 255, 0.05);
             --border: rgba(255, 255, 255, 0.08);
-            --text: #eef2f8;
-            --text-dim: #93a0b0;
-            --accent: #ff8c42;
-            --accent-2: #ff5e3a;
-            --green: #3ddc84;
-            --blue: #4da3ff;
-            --orange: #ffc24b;
-            --red: #ff6b6b;
-            --radius: 18px;
-            --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+            --border-strong: rgba(255, 255, 255, 0.14);
+            --text: #F8FAFC;
+            --text-dim: #94A3B8;
+            --text-faint: #64748B;
+            --accent: #10B981;
+            --accent-soft: rgba(16, 185, 129, 0.1);
+            --accent-border: rgba(16, 185, 129, 0.35);
+            --accent-text: #34D399;
+            --danger: #F87171;
+            --danger-soft: rgba(248, 113, 113, 0.1);
+            --danger-border: rgba(248, 113, 113, 0.3);
+            --radius: 12px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,16 +35,20 @@
 
         body {
             background:
-                radial-gradient(900px 480px at 85% -10%, rgba(255, 94, 58, 0.14), transparent 60%),
-                radial-gradient(700px 400px at -10% 0%, rgba(77, 163, 255, 0.10), transparent 55%),
+                radial-gradient(1100px 520px at 50% -12%, rgba(255, 255, 255, 0.04), transparent 60%),
                 var(--bg);
             color: var(--text);
-            font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
             min-height: 100vh;
             -webkit-tap-highlight-color: transparent;
         }
 
-        .wrap { max-width: 1000px; margin: 0 auto; padding: 24px 18px 44px; }
+        .mono { font-family: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace; }
+        .hidden { display: none !important; }
+
+        .wrap { max-width: 820px; margin: 0 auto; padding: 28px 20px 48px; }
 
         /* ---------- Header ---------- */
 
@@ -49,33 +57,29 @@
             align-items: center;
             justify-content: space-between;
             gap: 14px;
-            margin-bottom: 22px;
-            flex-wrap: wrap;
+            margin-bottom: 20px;
         }
 
         .logo {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
         }
 
         .logo .mark {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+            width: 34px; height: 34px;
+            border-radius: 9px;
             display: grid;
             place-items: center;
-            font-size: 1.25rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            box-shadow: 0 4px 18px rgba(255, 94, 58, 0.35);
+            color: var(--accent-text);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
         }
-
-        .logo .sub {
-            color: var(--accent);
-        }
+        .logo .mark svg { width: 18px; height: 18px; }
+        .logo .accent { color: var(--accent-text); }
 
         .header-right { display: flex; align-items: center; gap: 10px; }
 
@@ -85,156 +89,205 @@
             gap: 8px;
             font-size: 0.8rem;
             color: var(--text-dim);
-            padding: 8px 13px;
+            padding: 7px 13px;
             border: 1px solid var(--border);
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--surface);
             white-space: nowrap;
         }
 
         .dot {
-            width: 9px; height: 9px;
+            width: 8px; height: 8px;
             border-radius: 50%;
-            background: var(--red);
-            box-shadow: 0 0 8px var(--red);
-            transition: background 0.3s, box-shadow 0.3s;
+            background: var(--text-faint);
+            transition: background 0.3s;
         }
-        .dot.online { background: var(--green); box-shadow: 0 0 10px var(--green); }
-        .dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); }
+        .dot.online { background: var(--accent); }
+        .dot.offline { background: var(--danger); }
 
-        .cam-toggle {
+        .btn {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            color: #1a0d05;
-            font-weight: 700;
-            font-size: 0.85rem;
-            border: none;
-            border-radius: 999px;
-            padding: 9px 15px;
+            gap: 8px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.83rem;
+            font-weight: 500;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(255, 94, 58, 0.35);
-            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            padding: 8px 13px;
             white-space: nowrap;
         }
-        .cam-toggle:hover { filter: brightness(1.08); transform: translateY(-1px); }
-        .cam-toggle:active { transform: scale(0.96); }
+        .btn:hover { border-color: var(--border-strong); background: var(--surface-2); }
+        .btn:active { transform: scale(0.98); }
+        .btn svg { width: 15px; height: 15px; }
 
-        /* ---------- Bannière d'erreur ---------- */
+        .btn .ic-secondary { display: none; }
+        .btn.muted .ic-primary { display: none; }
+        .btn.muted .ic-secondary { display: inline; }
+        .btn.active .ic-primary { display: none; }
+        .btn.active .ic-secondary { display: inline; }
+
+        /* ---------- Bannière ---------- */
 
         .cam-banner {
             display: none;
-            background: rgba(255, 107, 107, 0.1);
-            border: 1px solid rgba(255, 107, 107, 0.4);
-            color: #ffb4b4;
-            border-radius: 12px;
-            padding: 12px 16px;
-            font-size: 0.88rem;
-            line-height: 1.5;
+            background: var(--danger-soft);
+            border: 1px solid var(--danger-border);
+            color: var(--danger);
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 0.85rem;
             margin-bottom: 18px;
         }
         .cam-banner.visible { display: block; }
 
-        /* ---------- Sélecteur d'exercice ---------- */
-
-        .section-title {
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-dim);
-            font-weight: 600;
-            margin: 4px 0 14px;
-        }
+        /* ---------- Sélecteur d'exercices (segmenté) ---------- */
 
         .exercises {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            padding: 4px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
+        .exercises::-webkit-scrollbar { display: none; }
 
         .exo {
-            position: relative;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 6px;
-            background: linear-gradient(180deg, var(--card), var(--bg-soft));
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px 14px 16px;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 7px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-dim);
             cursor: pointer;
-            overflow: hidden;
-            transition: transform 0.16s, border-color 0.16s, box-shadow 0.16s;
             user-select: none;
+            white-space: nowrap;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
         }
-        .exo:hover { transform: translateY(-4px); border-color: rgba(255, 140, 66, 0.5); }
-        .exo:active { transform: scale(0.97); }
-
+        .exo:hover { color: var(--text); }
         .exo.active {
-            border-color: var(--accent);
-            box-shadow: 0 10px 34px rgba(255, 94, 58, 0.28), inset 0 0 0 1px rgba(255, 140, 66, 0.5);
+            background: var(--accent-soft);
+            border-color: var(--accent-border);
+            color: var(--accent-text);
         }
+        .exo .icon { display: grid; place-items: center; }
+        .exo .icon svg { width: 15px; height: 15px; }
+        .exo .name { font-size: 0.85rem; font-weight: 500; }
+        .exo .desc { display: none; }
 
-        .exo .icon {
-            width: 58px; height: 58px;
-            display: grid;
-            place-items: center;
-            font-size: 1.7rem;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.05);
+        /* ---------- Barre d'outils (objectif / repos / chrono) ---------- */
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding: 12px 14px;
+            background: var(--surface);
             border: 1px solid var(--border);
-            transition: background 0.16s;
+            border-radius: 10px;
         }
-        .exo.active .icon { background: rgba(255, 140, 66, 0.16); border-color: rgba(255, 140, 66, 0.5); }
 
-        .exo .name { font-weight: 700; font-size: 1.02rem; }
-        .exo.active .name { color: var(--accent); }
-
-        .exo .desc { font-size: 0.76rem; color: var(--text-dim); text-align: center; line-height: 1.4; }
-
-        .exo .check {
-            position: absolute;
-            top: 10px; right: 10px;
-            width: 20px; height: 20px;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            font-size: 0.7rem;
-            color: #0a0e14;
-            background: var(--accent);
-            opacity: 0;
-            transform: scale(0.5);
-            transition: opacity 0.16s, transform 0.16s;
+        .ctl-group { display: flex; flex-direction: column; gap: 5px; }
+        .ctl-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-dim);
+            font-weight: 600;
         }
-        .exo.active .check { opacity: 1; transform: scale(1); }
+        .ctl-label svg { width: 11px; height: 11px; }
 
-        /* ---------- Zone principale ---------- */
-
-        .main {
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 18px;
-            align-items: start;
+        .ctl {
+            display: flex;
+            gap: 3px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 3px;
         }
+        .ctl button {
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .ctl button:hover { color: var(--text); }
+        .ctl button.active {
+            background: var(--accent-soft);
+            border-color: var(--accent-border);
+            color: var(--accent-text);
+        }
+
+        .session-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 11px;
+            white-space: nowrap;
+        }
+        .session-chip svg { width: 13px; height: 13px; opacity: 0.7; }
+        .session-chip .val { color: var(--text); font-weight: 600; }
+
+        .select {
+            font-family: inherit;
+            font-size: 0.8rem;
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            cursor: pointer;
+            outline: none;
+        }
+        .select:hover { border-color: var(--border-strong); }
+
+        /* ---------- Vidéo / Monitoring ---------- */
+
+        .stage { max-width: 720px; margin: 0 auto; }
 
         .video-wrap {
             position: relative;
-            background: var(--bg-soft);
+            background: #000;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: var(--shadow);
         }
 
         .video-wrap canvas {
             display: block;
             width: 100%;
             height: auto;
-            max-height: 78vh;
+            max-height: 66vh;
             object-fit: contain;
-            background: #000;
         }
 
         #video {
@@ -245,233 +298,485 @@
             pointer-events: none;
         }
 
-        .video-top {
+        .overlay {
             position: absolute;
-            top: 12px; left: 12px; right: 12px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            pointer-events: none;
+            flex-direction: column;
+            gap: 6px;
             z-index: 2;
+            pointer-events: none;
         }
+        .overlay.top-left { top: 12px; left: 12px; }
+        .overlay.top-center { top: 12px; left: 50%; transform: translateX(-50%); flex-direction: row; }
+        .overlay.top-right { top: 12px; right: 12px; align-items: flex-end; }
+        .overlay.bottom-right { bottom: 12px; right: 12px; align-items: flex-end; }
 
         .chip {
             display: inline-flex;
             align-items: center;
             gap: 7px;
-            font-size: 0.82rem;
-            font-weight: 600;
+            font-size: 0.78rem;
+            font-weight: 500;
             color: var(--text);
-            background: rgba(10, 14, 20, 0.72);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 7px 12px;
-            border-radius: 999px;
-            backdrop-filter: blur(6px);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            white-space: nowrap;
         }
-        .chip .pulse { color: var(--green); }
+        .chip svg { width: 13px; height: 13px; opacity: 0.7; }
+        .chip.live { color: var(--accent-text); border-color: var(--accent-border); }
+        .chip .pulse {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 1.6s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
 
-        .perf { font-variant-numeric: tabular-nums; }
+        .stat-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+        }
+        .stat-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+        }
+        .stat-label svg { width: 12px; height: 12px; }
+        .stat-value { font-size: 0.95rem; font-weight: 700; color: var(--text); min-width: 24px; text-align: right; }
 
-        .video-empty {
+        .counter {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            z-index: 2;
+            pointer-events: none;
+            padding: 8px 14px 8px 22px;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.15) 60%, transparent);
+            border-radius: 10px;
+        }
+        .counter-label {
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+        .counter-value {
+            font-size: 3.25rem;
+            line-height: 1;
+            font-weight: 700;
+            color: var(--accent-text);
+            font-variant-numeric: tabular-nums;
+        }
+        .counter-value.tick { animation: tick 0.25s ease; }
+        @keyframes tick {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+
+        .alert-badge {
+            position: absolute;
+            top: 54px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            pointer-events: none;
+            display: none;
+            background: var(--danger-soft);
+            border: 1px solid var(--danger-border);
+            color: #FCA5A5;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+        .alert-badge.visible { display: block; }
+
+        .rest-overlay {
             position: absolute;
             inset: 0;
-            display: grid;
-            place-items: center;
+            z-index: 4;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(6, 9, 14, 0.55);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            pointer-events: none;
+        }
+        .rest-overlay.visible { display: flex; }
+        .rest-overlay .label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.22em;
             color: var(--text-dim);
-            font-size: 0.9rem;
-            z-index: 1;
+            font-weight: 600;
+        }
+        .rest-overlay .num {
+            font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+            font-size: 5rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
         }
 
-        /* ---------- Stats ---------- */
-
-        .stats { display: flex; flex-direction: column; gap: 12px; }
-
-        .stat {
-            background: linear-gradient(180deg, var(--card), var(--bg-soft));
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px 18px;
+        .stage-foot {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
         }
+        .foot-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .btn-reset { color: var(--text-dim); }
+        .btn-reset:hover { color: var(--text); border-color: var(--border-strong); }
 
-        .stat .info { min-width: 0; }
+        /* ---------- Historique ---------- */
 
-        .stat .label {
-            font-size: 0.68rem;
-            text-transform: uppercase;
-            letter-spacing: 1.4px;
-            color: var(--text-dim);
-            font-weight: 600;
-        }
-
-        .stat .value {
-            font-size: 1.9rem;
-            font-weight: 800;
-            line-height: 1.15;
-            margin-top: 2px;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .stat .value.green  { color: var(--green); }
-        .stat .value.blue   { color: var(--blue); }
-        .stat .value.orange { color: var(--orange); }
-
-        .stat .icon {
-            width: 44px; height: 44px;
-            border-radius: 14px;
-            display: grid;
-            place-items: center;
-            font-size: 1.2rem;
-            background: rgba(255, 255, 255, 0.05);
+        .history {
+            margin-top: 28px;
             border: 1px solid var(--border);
-            flex-shrink: 0;
+            border-radius: 10px;
+            background: var(--surface);
+            overflow: hidden;
         }
-        .stat.reps .icon { background: rgba(61, 220, 132, 0.12); border-color: rgba(61, 220, 132, 0.4); }
-        .stat.pos .icon { background: rgba(77, 163, 255, 0.12); border-color: rgba(77, 163, 255, 0.4); }
-        .stat.angle .icon { background: rgba(255, 194, 75, 0.12); border-color: rgba(255, 194, 75, 0.4); }
-
-        .reset-btn {
+        .history .h-toggle {
             width: 100%;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 13px 15px;
             background: transparent;
+            border: none;
             color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 13px;
+            font-family: inherit;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: border-color 0.15s, background 0.15s, color 0.15s;
         }
-        .reset-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(255, 140, 66, 0.07); }
-        .reset-btn:active { transform: scale(0.98); }
+        .history .chevron { transition: transform 0.2s; }
+        .history .h-toggle.open .chevron { transform: rotate(180deg); }
+        .history .h-body { display: none; padding: 4px 15px 14px; }
+        .history .h-body.open { display: block; }
 
-        .stats .hint {
-            font-size: 0.72rem;
+        .hist-summary {
+            font-size: 0.82rem;
             color: var(--text-dim);
-            text-align: center;
-            line-height: 1.5;
-            padding: 0 8px;
+            padding: 8px 2px 10px;
         }
+        .hist-list { list-style: none; }
+        .hist-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 2px;
+            border-top: 1px solid var(--border);
+            font-size: 0.82rem;
+        }
+        .hist-list .h-date { color: var(--text-faint); font-size: 0.75rem; width: 96px; flex-shrink: 0; }
+        .hist-list .h-exo { flex: 1; color: var(--text); font-weight: 500; }
+        .hist-list .h-val { color: var(--accent-text); font-family: "JetBrains Mono", Consolas, monospace; }
 
-        /* ---------- Footer ---------- */
+        .hist-clear {
+            margin-top: 10px;
+            padding: 7px 12px;
+            font-family: inherit;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .hist-clear:hover { color: var(--danger); border-color: var(--danger-border); }
 
         footer {
-            margin-top: 26px;
+            margin-top: 28px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
             text-align: center;
-            color: var(--text-dim);
+            color: var(--text-faint);
             font-size: 0.76rem;
         }
-        footer .sep { opacity: 0.5; margin: 0 6px; }
 
-        @media (max-width: 860px) {
-            .main { grid-template-columns: 1fr; }
-            .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-            .stat { flex-direction: column; text-align: center; }
-            .stat .value { font-size: 1.7rem; }
+        /* ---------- Toast ---------- */
+
+        .toast {
+            position: fixed;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            z-index: 60;
+            background: rgba(10, 14, 20, 0.94);
+            border: 1px solid var(--accent-border);
+            color: var(--accent-text);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
+        .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        @media (max-width: 560px) {
-            .wrap { padding: 18px 14px 36px; }
-            header { margin-bottom: 16px; }
-            .logo { font-size: 1.3rem; }
-            .logo .mark { width: 36px; height: 36px; font-size: 1.1rem; }
+        /* ---------- Mode focus ---------- */
 
-            .status { padding: 7px 11px; font-size: 0.75rem; }
-            .cam-toggle { padding: 8px 13px; font-size: 0.8rem; }
+        body.focus .wrap { max-width: none; padding: 0; }
+        body.focus header,
+        body.focus .exercises,
+        body.focus .toolbar,
+        body.focus .stage-foot,
+        body.focus .history,
+        body.focus footer,
+        body.focus .cam-banner,
+        body.focus .toast { display: none; }
 
-            .exercises { gap: 10px; }
-            .exo { padding: 16px 10px 13px; }
-            .exo .icon { width: 50px; height: 50px; font-size: 1.5rem; }
-            .exo .name { font-size: 0.95rem; }
-            .exo .desc { font-size: 0.7rem; }
+        body.focus .stage { max-width: none; }
+        body.focus .video-wrap { border-radius: 0; border: none; }
+        body.focus .video-wrap canvas { max-height: 100vh; }
+        body.focus .counter { left: 28px; bottom: 26px; padding: 10px 18px; }
+        body.focus .counter-label { font-size: 0.8rem; }
+        body.focus .counter-value { font-size: 13rem; }
+        body.focus .stat-label { font-size: 0.8rem; }
+        body.focus .stat-value { font-size: 1.3rem; }
 
+        @media (max-width: 620px) {
+            .wrap { padding: 20px 14px 36px; }
+            header { flex-wrap: wrap; }
+            .status { font-size: 0.75rem; padding: 6px 11px; }
             .cam-toggle span { display: none; }
 
-            .stats { grid-template-columns: 1fr; }
-            .stat { flex-direction: row; text-align: left; }
-            .stat .value { font-size: 1.5rem; }
+            .exo { padding: 8px 12px; }
+            .exo .name { font-size: 0.8rem; }
+
+            .toolbar { padding: 10px; }
+            .session-chip { font-size: 0.75rem; }
+
+            .counter-value { font-size: 2.6rem; }
+            body.focus .counter-value { font-size: 8rem; }
+            .stat-value { font-size: 0.85rem; }
+            .overlay.bottom-right { bottom: 10px; right: 10px; }
+            .counter { left: 10px; bottom: 10px; }
+            .video-wrap canvas { max-height: 54vh; }
+            .alert-badge { top: 50px; font-size: 0.7rem; white-space: normal; max-width: 80%; text-align: center; }
+            .rest-overlay .num { font-size: 4rem; }
         }
     </style>
 </head>
 <body>
     <div class="wrap">
         <header>
-            <div class="logo">
-                <span class="mark">🏋️</span>
-                <span>Rep<span class="sub">IA</span></span>
-            </div>
+            <a class="logo">
+                <span class="mark">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>
+                    </svg>
+                </span>
+                <span>Rep<span class="accent">IA</span></span>
+            </a>
             <div class="header-right">
-                <button class="cam-toggle" id="cam-toggle" type="button" title="Basculer caméra avant / arrière">📷<span>Caméra avant / arrière</span></button>
+                <button class="btn cam-toggle" id="cam-toggle" type="button" title="Basculer caméra avant / arrière">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                        <circle cx="12" cy="13" r="3"/>
+                    </svg>
+                    <span>Caméra avant / arrière</span>
+                </button>
                 <div class="status">
                     <span class="dot" id="dot"></span>
-                    <span id="status-text">Démarrage…</span>
+                    <span id="status-text">Initialisation…</span>
                 </div>
             </div>
         </header>
 
         <div class="cam-banner" id="cam-banner">
-            ⚠️ Caméra indisponible &mdash; la détection ne peut pas démarrer.
+            Caméra indisponible — la détection ne peut pas démarrer.
         </div>
 
-        <div class="section-title">Choisissez votre exercice</div>
         <div class="exercises" id="exercises"></div>
 
-        <div class="main">
-            <div class="video-wrap">
-                <div class="video-top">
-                    <span class="chip">🎯 <strong id="exo-title">Pompes</strong></span>
-                    <span class="chip"><span class="pulse">●</span> en direct &nbsp;<span id="perf" class="perf"></span></span>
-                </div>
-                <video id="video" autoplay playsinline muted></video>
-                <canvas id="canvas"></canvas>
+        <div class="toolbar">
+            <div class="ctl-group">
+                <span class="ctl-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+                    </svg>
+                    Objectif
+                </span>
+                <div class="ctl" id="obj-options"></div>
             </div>
 
-            <div class="stats">
-                <div class="stat reps">
-                    <div class="info">
-                        <div class="label">Répétitions</div>
-                        <div class="value green" id="compteur">0</div>
-                    </div>
-                    <div class="icon">💪</div>
-                </div>
-
-                <div class="stat pos">
-                    <div class="info">
-                        <div class="label">Position</div>
-                        <div class="value blue" id="stage">&mdash;</div>
-                    </div>
-                    <div class="icon">🧘</div>
-                </div>
-
-                <div class="stat angle">
-                    <div class="info">
-                        <div class="label">Angle coude</div>
-                        <div class="value orange" id="angle">&mdash;</div>
-                    </div>
-                    <div class="icon">📐</div>
-                </div>
-
-                <button class="reset-btn" id="reset-btn" type="button">🔄 Réinitialiser le compteur</button>
-                <div class="hint">
-                    Astuce : recule pour que tout ton corps soit visible,
-                    et reste de face face à la caméra.
-                </div>
+            <div class="ctl-group">
+                <span class="ctl-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="13" r="8"/><path d="M12 2v3"/><path d="M12 2h4"/><path d="M12 13v-4"/>
+                    </svg>
+                    Repos
+                </span>
+                <div class="ctl" id="repos-options"></div>
             </div>
+
+            <span class="session-chip" title="Durée de la séance">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/>
+                </svg>
+                <span class="mono val" id="session-timer">00:00</span>
+            </span>
         </div>
 
+        <main class="stage">
+            <div class="video-wrap">
+                <video id="video" autoplay playsinline muted></video>
+                <canvas id="canvas"></canvas>
+
+                <div class="overlay top-left">
+                    <span class="chip">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>
+                        </svg>
+                        <span id="exo-title">Pompes</span>
+                    </span>
+                </div>
+
+                <div class="overlay top-center">
+                    <span class="chip" id="serie-progress">Libre</span>
+                    <span class="chip live hidden" id="rest-timer">Repos</span>
+                </div>
+
+                <div class="overlay top-right">
+                    <span class="chip live">
+                        <span class="pulse"></span>
+                        <span>LIVE</span>
+                    </span>
+                    <span class="chip mono"><span id="perf"></span></span>
+                </div>
+
+                <div class="overlay bottom-right">
+                    <div class="stat-badge">
+                        <span class="stat-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/>
+                            </svg>
+                            Position
+                        </span>
+                        <span class="stat-value mono" id="stage">&mdash;</span>
+                    </div>
+                    <div class="stat-badge">
+                        <span class="stat-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z"/>
+                                <path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>
+                            </svg>
+                            Angle coude
+                        </span>
+                        <span class="stat-value mono" id="angle">&mdash;</span>
+                    </div>
+                </div>
+
+                <div class="counter">
+                    <div class="counter-label">Répétitions</div>
+                    <div class="counter-value mono" id="compteur">0</div>
+                </div>
+
+                <div class="alert-badge" id="alert-badge"></div>
+
+                <div class="rest-overlay" id="rest-overlay">
+                    <span class="label">Repos</span>
+                    <span class="num mono" id="rest-num">30</span>
+                </div>
+            </div>
+
+            <div class="stage-foot">
+                <button class="btn btn-reset" id="reset-btn" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+                    </svg>
+                    Réinitialiser
+                </button>
+
+                <div class="foot-right">
+                    <label class="ctl-label" for="fps-select" title="Fréquence de détection">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                        </svg>
+                    </label>
+                    <select class="select" id="fps-select" title="Fréquence de détection">
+                        <option value="auto">Auto</option>
+                        <option value="30">30 fps</option>
+                        <option value="20">20 fps</option>
+                        <option value="12">12 fps</option>
+                        <option value="6">6 fps éco</option>
+                    </select>
+
+                    <button class="btn" id="focus-btn" type="button" title="Mode focus plein écran">
+                        <svg class="ic-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+                        </svg>
+                        <svg class="ic-secondary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+                        </svg>
+                    </button>
+
+                    <button class="btn" id="sound-btn" type="button" title="Son &amp; voix">
+                        <svg class="ic-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                        </svg>
+                        <svg class="ic-secondary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <section class="history">
+            <button class="h-toggle" id="hist-toggle" type="button" aria-expanded="false">
+                <span>Historique &amp; progression</span>
+                <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+            </button>
+            <div class="h-body" id="hist-body">
+                <div class="hist-summary" id="hist-summary"></div>
+                <ul class="hist-list" id="hist-list"></ul>
+                <button class="hist-clear" id="hist-clear" type="button">Effacer l'historique</button>
+            </div>
+        </section>
+
         <footer>
-            Détection 100 % dans ton navigateur &mdash; aucune image envoyée au serveur
-            <span class="sep">·</span> RepIA
+            Détection 100 % locale&nbsp;·&nbsp;aucune image quitte votre navigateur
         </footer>
     </div>
+
+    <div class="toast" id="toast"></div>
 
     <script type="module" src="/static/js/app.js"></script>
 </body>

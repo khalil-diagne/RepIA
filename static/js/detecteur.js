@@ -26,6 +26,17 @@ function mediane(valeurs) {
     return (tri[n / 2 - 1] + tri[n / 2]) / 2;
 }
 
+const ARTICULATIONS = {
+    coude: [
+        [12, 14, 16],
+        [11, 13, 15],
+    ],
+    genou: [
+        [24, 26, 28],
+        [23, 25, 27],
+    ],
+};
+
 export class DetecteurExercice {
     static FRAMES_VALIDATION = 3;
     static VISIBILITY_MIN = 0.5;
@@ -38,6 +49,8 @@ export class DetecteurExercice {
         this.typeExo = typeExo;
         this.config = EXERCICES[typeExo];
         this.nom = this.config.nom;
+        this.temps = !!this.config.temps;
+        this.pause = false;
 
         this.reset();
     }
@@ -48,44 +61,44 @@ export class DetecteurExercice {
         this.nbFramesFlechi = 0;
         this.nbFramesEtendu = 0;
         this.angleCoude = null;
+        this.positionValide = false;
     }
 
     analyser(pose) {
         this.angleCoude = null;
 
         if (!pose) {
+            this.positionValide = false;
             return this.stats();
         }
 
         const c = this.config;
         const V = DetecteurExercice.VISIBILITY_MIN;
 
-        const epD = pose[12], coudeD = pose[14], poignetD = pose[16];
-        const epG = pose[11], coudeG = pose[13], poignetG = pose[15];
-
-        const brasDVisible = (
-            epD.visibility > V && coudeD.visibility > V && poignetD.visibility > V
-        );
-        const brasGVisible = (
-            epG.visibility > V && coudeG.visibility > V && poignetG.visibility > V
-        );
-
-        let angleD = null;
-        let angleG = null;
-
-        if (brasDVisible) {
-            angleD = calculerAngle(epD, coudeD, poignetD);
-        }
-        if (brasGVisible) {
-            angleG = calculerAngle(epG, coudeG, poignetG);
-        }
+        const voies = ARTICULATIONS[c.articulation] || ARTICULATIONS.coude;
 
         const angles = [];
-        if (angleD !== null) angles.push(angleD);
-        if (angleG !== null) angles.push(angleG);
+        for (const voie of voies) {
+            const a = pose[voie[0]], b = pose[voie[1]], d = pose[voie[2]];
+            if (a && b && d && a.visibility > V && b.visibility > V && d.visibility > V) {
+                angles.push(calculerAngle(a, b, d));
+            }
+        }
 
         const angle = angles.length === 0 ? null : mediane(angles);
         this.angleCoude = angle;
+
+        if (this.temps) {
+            const epaules = (pose[11] && pose[12]);
+            const hanches = (pose[23] && pose[24]);
+            this.positionValide = Boolean(
+                epaules && hanches &&
+                pose[11].visibility > V && pose[12].visibility > V &&
+                pose[23].visibility > V && pose[24].visibility > V
+            );
+            this.stage = this.positionValide ? "haut" : "bas";
+            return this.stats();
+        }
 
         if (angle !== null) {
             if (angle < c.angle_flechi) {
@@ -112,7 +125,7 @@ export class DetecteurExercice {
     }
 
     _transition(nouveauStage) {
-        if (nouveauStage === "haut" && this.stage === "bas") {
+        if (!this.pause && nouveauStage === "haut" && this.stage === "bas") {
             this.compteur += 1;
         }
         this.stage = nouveauStage;
@@ -125,6 +138,8 @@ export class DetecteurExercice {
             compteur: this.compteur,
             stage: this.stage,
             angleCoude: this.angleCoude,
+            temps: this.temps,
+            positionValide: this.positionValide,
         };
     }
 }
