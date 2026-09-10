@@ -278,27 +278,6 @@
             color: var(--gold-text);
         }
 
-        .tool-alertes {
-            font-family: inherit;
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--gold-text);
-            background: var(--gold-soft);
-            border: 1px solid var(--gold-border);
-            border-radius: 9px;
-            min-height: 44px;
-            padding: 6px 14px;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
-            white-space: nowrap;
-        }
-        .tool-alertes:hover {
-            background: rgba(212, 175, 55, 0.22);
-            border-color: rgba(212, 175, 55, 0.6);
-        }
-
         .session-chip {
             display: inline-flex;
             align-items: center;
@@ -860,164 +839,102 @@
         }
         .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* ---------- Modale alertes personnalisées ---------- */
+        /* ---------- Félicitations de fin de séance ---------- */
 
-        .modal-backdrop {
+        .felic-overlay {
             position: fixed;
             inset: 0;
-            z-index: 70;
-            background: rgba(0, 0, 0, 0.66);
-            backdrop-filter: blur(3px);
+            z-index: 80;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(4px);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.25s;
         }
-        .modal-backdrop.visible { opacity: 1; pointer-events: auto; }
+        .felic-overlay.open { opacity: 1; pointer-events: auto; }
 
-        .modal {
-            position: fixed;
-            z-index: 71;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.96);
-            width: min(560px, calc(100vw - 28px));
-            max-height: calc(100vh - 40px);
-            max-height: calc(100dvh - 40px);
+        .felic-card {
+            width: min(420px, 100%);
             background: var(--surface);
-            border: 1px solid var(--border-strong);
-            border-radius: 14px;
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s, transform 0.25s;
+            border: 1px solid var(--gold-border);
+            border-radius: 16px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.22);
+            padding: 26px 22px 20px;
+            text-align: center;
+            transform: translateY(12px) scale(0.97);
+            transition: transform 0.25s;
         }
-        .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .felic-overlay.open .felic-card { transform: translateY(0) scale(1); }
 
-        .modal-head {
+        .felic-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 14px;
+            border-radius: 50%;
+            background: var(--gold-soft);
+            border: 1px solid var(--gold-border);
+            color: var(--gold-text);
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 16px 18px 10px;
-            border-bottom: 1px solid var(--border);
-        }
-        .modal-head h3 {
-            font-family: "Montserrat", "Inter", sans-serif;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            font-size: 0.95rem;
-        }
-        .modal-close {
-            display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 9px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text-dim);
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
         }
-        .modal-close:hover { background: var(--surface-2); color: var(--text); }
-        .modal-close svg { width: 17px; height: 17px; }
+        .felic-icon svg { width: 30px; height: 30px; }
 
-        .modal-note {
-            padding: 12px 18px 2px;
-            font-size: 0.82rem;
-            color: var(--text-dim);
-            line-height: 1.55;
-        }
-        .modal-note strong { color: var(--gold-text); }
-
-        .modal-body {
-            padding: 10px 18px 18px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .phrase-card {
-            background: rgba(0, 0, 0, 0.22);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px;
-        }
-        .phrase-titre {
+        .felic-title {
             font-family: "Montserrat", "Inter", sans-serif;
-            font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 1.15rem;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            color: var(--text);
+            color: var(--gold-text);
         }
-        .phrase-titre span {
-            display: block;
-            font-family: "Inter", sans-serif;
-            font-weight: 400;
-            text-transform: none;
-            letter-spacing: 0;
-            font-size: 0.72rem;
-            color: var(--text-faint);
-            margin-top: 2px;
-        }
-        .phrase-card label {
-            display: block;
-            font-size: 0.62rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
+        .felic-msg {
+            margin: 6px 0 16px;
+            font-size: 0.9rem;
             color: var(--text-dim);
-            margin: 10px 0 4px;
-            font-weight: 700;
-        }
-        .phrase-card textarea {
-            width: 100%;
-            resize: vertical;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.86rem;
-            line-height: 1.45;
-            padding: 8px 10px;
-            min-height: 44px;
-        }
-        .phrase-card textarea:focus {
-            outline: none;
-            border-color: var(--gold-border);
-            background: rgba(255, 255, 255, 0.06);
+            line-height: 1.5;
         }
 
-        .apercu-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            margin-top: 12px;
-            min-height: 40px;
-            padding: 6px 14px;
-            border-radius: 9px;
-            border: 1px solid var(--gold-border);
-            background: var(--gold-soft);
-            color: var(--gold-text);
-            font-family: "Montserrat", "Inter", sans-serif;
-            font-size: 0.72rem;
+        .felic-stats {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .felic-chip {
+            min-width: 74px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
+            color: var(--text);
         }
-        .apercu-btn:hover {
-            background: rgba(212, 175, 55, 0.22);
-            border-color: rgba(212, 175, 55, 0.6);
+
+        .felic-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .apercu-btn svg { width: 14px; height: 14px; }
+        .felic-actions .btn { width: 100%; }
+
+        .btn-gold {
+            color: #1a1400;
+            background: linear-gradient(180deg, #e8cb5e, #d4af37);
+            border: 1px solid #c9a62f;
+            font-weight: 800;
+        }
+        .btn-gold:hover {
+            filter: brightness(1.06);
+            border-color: #c9a62f;
+        }
+        .felic-fermer { color: var(--text-dim); }
 
         /* ---------- Responsive / orientation ---------- */
 
@@ -1122,16 +1039,6 @@
                 </svg>
                 <span class="mono val" id="session-timer">00:00</span>
             </span>
-
-            <div class="ctl-group">
-                <span class="ctl-label">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>
-                    </svg>
-                    Alertes
-                </span>
-                <button class="tool-alertes" id="alertes-btn" type="button">Écouter</button>
-            </div>
         </div>
 
         <div class="main-grid">
@@ -1293,7 +1200,8 @@
         </section>
 
         <footer>
-            RepIA · Détection 100 % locale — aucune image ne quitte votre navigateur
+            RepIA · Détection 100 % locale — aucune image ne quitte votre navigateur ·
+            créé par Ibrahima DIAGNE
         </footer>
     </div>
 
@@ -1326,21 +1234,30 @@
 
     <div class="toast" id="toast"></div>
 
-    <div class="modal-backdrop" id="modal-backdrop"></div>
-    <div class="modal" id="modal-alertes">
-        <div class="modal-head">
-            <h3>Alertes vocales personnalisées</h3>
-            <button class="modal-close" id="alertes-close" type="button" title="Fermer">
+    <div class="felic-overlay" id="felic-overlay">
+        <div class="felic-card" role="dialog" aria-modal="true" aria-label="Félicitations">
+            <div class="felic-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
                 </svg>
-            </button>
+            </div>
+            <h3 class="felic-title">Séance terminée</h3>
+            <p class="felic-msg">Félicitations ! Objectif atteint, bien joué.</p>
+            <div class="felic-stats">
+                <span class="felic-chip mono" id="felic-reps">–</span>
+                <span class="felic-chip mono" id="felic-series">–</span>
+                <span class="felic-chip mono" id="felic-duree">–</span>
+            </div>
+            <div class="felic-actions">
+                <button class="btn btn-gold" id="felic-recommencer" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+                    </svg>
+                    Recommencer
+                </button>
+                <button class="btn felic-fermer" id="felic-fermer" type="button">Fermer</button>
+            </div>
         </div>
-        <p class="modal-note">
-            Écoute tes alertes vocales en wolof. Elles sont déclenchées pendant la séance
-            (hors cadre, recule, gainage, fin de série, fin de séance, fin de repos).
-        </p>
-        <div class="modal-body" id="alertes-body"></div>
     </div>
 
     <script type="module" src="/static/js/app.js"></script>

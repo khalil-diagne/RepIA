@@ -24,7 +24,8 @@ const AUDIO_ALERTES = {
     gainage: "gainage.wav",
     serieFinie: "serie_finie.wav",
     seanceFinie: "seance_finie.wav",
-    reposFini: "repos_fini.wav"
+    reposFini: "repos_fini.wav",
+    squadDebut: "squaddebut.wav"
 };
 
 const HIST_KEY = "repia_historique";
@@ -97,6 +98,7 @@ let repsCible = 0;
 let serieEnCours = 1;
 let totalRepsSeance = 0;
 let dernierCompteurVu = 0;
+let premiereSerieJouee = false;
 
 let tempsPlankMs = 0;
 let dernierePoseHeldAt = 0;
@@ -256,13 +258,6 @@ function jouerAlerte(cle) {
     } catch (e) {}
 }
 
-function testerAlerte(cle) {
-    if (!audioCache[cle]) {
-        prechargerAudios();
-    }
-    jouerAlerte(cle);
-}
-
 document.addEventListener("pointerdown", function porteAudio() {
     garantirAudio();
 }, { once: true });
@@ -350,6 +345,10 @@ function selectExo(id) {
 
     majProgression();
     afficherStats(detecteur.stats());
+
+    if (id === "squats" || id === "plank") {
+        jouerAlerte("squadDebut");
+    }
 }
 
 function resetCompteur() {
@@ -494,6 +493,9 @@ function verifierSerie(v) {
 }
 
 function relancerSerie() {
+    if (detecteur.typeExo === "squats") {
+        jouerAlerte("squadDebut");
+    }
     detecteur.pause = false;
     detecteur.reset();
     dernierCompteurVu = 0;
@@ -503,7 +505,11 @@ function relancerSerie() {
 }
 
 function terminerSeance() {
-    enregistrerHistorique(totalRepsSeance, seriesTotal, dureeSeanceMs);
+    const reps = totalRepsSeance;
+    const series = seriesTotal;
+    const duree = dureeSeanceMs;
+
+    enregistrerHistorique(reps, series, duree);
     rendreHistorique();
 
     bipFinSeance();
@@ -522,6 +528,21 @@ function terminerSeance() {
 
     majProgression();
     afficherStats(detecteur.stats());
+
+    afficherFelicitation(reps, series, duree);
+}
+
+function afficherFelicitation(reps, series, dureeMs) {
+    $(`felic-overlay`).classList.add("open");
+    $(`felic-reps`).textContent = reps + " reps";
+    $(`felic-series`).textContent = series + (series > 1 ? " séries" : " série");
+    $(`felic-duree`).textContent = formaterDuree(dureeMs / 1000);
+    detecteur.pause = true;
+}
+
+function fermerFelicitation() {
+    $(`felic-overlay`).classList.remove("open");
+    detecteur.pause = false;
 }
 
 function demarrerRepos() {
@@ -1245,6 +1266,10 @@ async function demarrerCamera(facing) {
         video.removeEventListener("loadeddata", uneFois);
         startLoop();
         demarrerChrono();
+        if (!premiereSerieJouee && detecteur.typeExo === "squats") {
+            premiereSerieJouee = true;
+            jouerAlerte("squadDebut");
+        }
     });
 }
 
@@ -1260,50 +1285,6 @@ function ouvrirFeuille() {
 function fermerFeuille() {
     $(`exo-sheet`).classList.remove("open");
     $(`exo-backdrop`).classList.remove("visible");
-}
-
-// ============================================================
-// ALERTES PERSONNALISEES (phrases editables)
-// ============================================================
-
-const INFOS_ALERTES = {
-    horsCadre: { titre: "Hors cadre", label: "Quand ton corps quitte la vue" },
-    partiel: { titre: "Corps partiellement visible", label: "Quand on ne voit pas tout le corps" },
-    gainage: { titre: "Gainage", label: "Quand la position de gainage n'est pas valide" },
-    serieFinie: { titre: "Série terminée", label: "Fin d'une série" },
-    seanceFinie: { titre: "Séance terminée", label: "Fin de la séance" },
-    reposFini: { titre: "Repos terminé", label: "Fin du temps de repos" }
-};
-
-const ICONE_LECTURE =
-    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='6 3 20 12 6 21 6 3'/></svg>";
-
-function remplirApercuAlertes() {
-    const box = $(`alertes-body`);
-    if (!box) return;
-    box.innerHTML = "";
-    Object.keys(AUDIO_ALERTES).forEach(function (k) {
-        const info = INFOS_ALERTES[k] || { titre: k, label: "" };
-        const div = document.createElement("div");
-        div.className = "phrase-card";
-        div.innerHTML =
-            '<div class="phrase-titre">' + info.titre +
-            '<span>' + info.label + "</span></div>" +
-            '<button class="apercu-btn" data-cle="' + k + '" type="button">' +
-            ICONE_LECTURE + " Écouter</button>";
-        box.appendChild(div);
-    });
-}
-
-function ouvrirAlertes() {
-    remplirApercuAlertes();
-    $(`modal-alertes`).classList.add("open");
-    $(`modal-backdrop`).classList.add("visible");
-}
-
-function fermerAlertes() {
-    $(`modal-alertes`).classList.remove("open");
-    $(`modal-backdrop`).classList.remove("visible");
 }
 
 // ============================================================
@@ -1323,16 +1304,11 @@ document.getElementById("bb-reset").addEventListener("click", resetCompteur);
 document.getElementById("bb-focus").addEventListener("click", basculerFocus);
 document.getElementById("exit-focus").addEventListener("click", basculerFocus);
 
-document.getElementById("alertes-btn").addEventListener("click", ouvrirAlertes);
-document.getElementById("alertes-close").addEventListener("click", fermerAlertes);
-document.getElementById("modal-backdrop").addEventListener("click", fermerAlertes);
-
-document.getElementById("alertes-body").addEventListener("click", function (ev) {
-    const btn = ev.target.closest(".apercu-btn");
-    if (btn) {
-        jouerAlerte(btn.dataset.cle);
-    }
+document.getElementById("felic-recommencer").addEventListener("click", function () {
+    fermerFelicitation();
+    resetCompteur();
 });
+document.getElementById("felic-fermer").addEventListener("click", fermerFelicitation);
 
 document.getElementById("hist-toggle").addEventListener("click", function () {
     const corps = document.getElementById("hist-body");
