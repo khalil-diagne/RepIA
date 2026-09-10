@@ -15,8 +15,17 @@ const SEUIL_DIMINUER = 50;
 const SEUIL_AUGMENTER = 22;
 
 const ALPHA_LISSAGE = 0.55;
-const PERIODE_ALERTE_VOIX = 30000;
-const ALERTE_VOIX_APRES_MS = 3000;
+const PERIODE_ALERTE_AUDIO = 30000;
+const ALERTE_AUDIO_APRES_MS = 3000;
+
+const AUDIO_ALERTES = {
+    horsCadre: "hors_cadre.wav",
+    partiel: "partiel.wav",
+    gainage: "gainage.wav",
+    serieFinie: "serie_finie.wav",
+    seanceFinie: "seance_finie.wav",
+    reposFini: "repos_fini.wav"
+};
 
 const HIST_KEY = "repia_historique";
 const PREFS_KEY = "repia_prefs";
@@ -98,7 +107,7 @@ let sessionTimerId = null;
 
 let sonActif = true;
 let audioCtx = null;
-let dernierAlerteVoixAt = 0;
+let dernierAlerteSonAt = 0;
 let alerteCle = null;
 let alerteDepuis = 0;
 
@@ -209,99 +218,49 @@ function bipFinSeance() {
     bip(1568, 0.28, 0.15, 0.42);
 }
 
-const PHRASES_DEFAUT = {
-    horsCadre: {
-        fr: "Positionne-toi dans le cadre",
-        wo: "Dugil ci biir kamer bi, duñu la gis"
-    },
-    partiel: {
-        fr: "Recule, ton corps entier doit être visible",
-        wo: "Réculal sëpp, duñu mën a gis sa yaram bépp"
-    },
-    gainage: {
-        fr: "Entre dans la position de gainage",
-        wo: "Dugil ci posisyon gainage bi, nekk fa rekk"
-    },
-    serieFinie: {
-        fr: "Série terminée. Repos.",
-        wo: "Séri bi jeex na! Noppal bu baax"
-    },
-    seanceFinie: {
-        fr: "Séance terminée. Bravo !",
-        wo: "Séance bi jeex na! Jeral sa bop"
-    },
-    reposFini: {
-        fr: "Repos terminé",
-        wo: "Nopp bi jeex na! Duggil ci biir"
-    }
-};
+// ============================================================
+// AUDIOS WOLOF (fichiers enregistrés, aucun TTS)
+// ============================================================
 
-const CLE_PHRASES = "repia_phrases";
+const audioCache = {};
 
-function chargerPhrases() {
-    const R = {};
-    Object.keys(PHRASES_DEFAUT).forEach(function (k) {
-        R[k] = { fr: PHRASES_DEFAUT[k].fr, wo: PHRASES_DEFAUT[k].wo };
+function prechargerAudios() {
+    Object.keys(AUDIO_ALERTES).forEach(function (k) {
+        const a = new Audio();
+        a.src = "/static/audio/wo/" + AUDIO_ALERTES[k];
+        a.preload = "auto";
+        audioCache[k] = a;
     });
+}
+
+function arreterAudio() {
+    Object.keys(audioCache).forEach(function (k) {
+        const a = audioCache[k];
+        if (!a) return;
+        try {
+            a.pause();
+            a.currentTime = 0;
+        } catch (e) {}
+    });
+}
+
+function jouerAlerte(cle) {
+    if (!sonActif) return;
+    const a = audioCache[cle];
+    if (!a) return;
+    arreterAudio();
     try {
-        const brut = localStorage.getItem(CLE_PHRASES);
-        if (brut) {
-            const sauve = JSON.parse(brut);
-            Object.keys(sauve).forEach(function (k) {
-                if (R[k] && sauve[k]) {
-                    if (typeof sauve[k].fr === "string") R[k].fr = sauve[k].fr;
-                    if (typeof sauve[k].wo === "string") R[k].wo = sauve[k].wo;
-                }
-            });
-        }
-    } catch (e) {}
-    return R;
-}
-
-function sauvegarderPhrases() {
-    try {
-        localStorage.setItem(CLE_PHRASES, JSON.stringify(PHRASES_VOIX));
+        a.currentTime = 0;
+        const promesse = a.play();
+        if (promesse && promesse.catch) promesse.catch(function () {});
     } catch (e) {}
 }
 
-let PHRASES_VOIX = chargerPhrases();
-
-let voixTTS = null;
-let voixWolofDispo = false;
-
-function rafraichirVoixTTS() {
-    if (!("speechSynthesis" in window)) return;
-    const vs = window.speechSynthesis.getVoices();
-    if (!vs.length) return;
-    const wo = vs.find(function (v) {
-        return /^wo([-_]|$)/i.test(v.lang);
-    }) || null;
-    voixWolofDispo = Boolean(wo);
-    voixTTS = wo || vs.find(function (v) {
-        return /^fr([-_]|$)/i.test(v.lang);
-    }) || null;
-}
-
-if ("speechSynthesis" in window) {
-    rafraichirVoixTTS();
-    window.speechSynthesis.onvoiceschanged = rafraichirVoixTTS;
-}
-
-function texteParle(v) {
-    return voixWolofDispo ? v.wo : (v.fr + (v.wo ? ". " + v.wo : ""));
-}
-
-function parler(texte) {
-    if (!sonActif || !("speechSynthesis" in window)) return;
-    try {
-        const u = new SpeechSynthesisUtterance(texte);
-        u.lang = voixTTS ? voixTTS.lang : "fr-FR";
-        if (voixTTS) u.voice = voixTTS;
-        u.rate = 1.05;
-        u.volume = 0.9;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(u);
-    } catch (e) {}
+function testerAlerte(cle) {
+    if (!audioCache[cle]) {
+        prechargerAudios();
+    }
+    jouerAlerte(cle);
 }
 
 document.addEventListener("pointerdown", function porteAudio() {
@@ -513,15 +472,15 @@ function verifierSerie(v) {
     if (repsCible <= 0) return;
 
     detecteur.pause = true;
+    totalRepsSeance += v;
 
     if (serieEnCours >= seriesTotal) {
         terminerSeance();
         return;
     }
 
-    totalRepsSeance += v;
     bipSerie();
-    parler(texteParle(PHRASES_VOIX.serieFinie));
+    jouerAlerte("serieFinie");
     montrerToast("Série " + serieEnCours + "/" + seriesTotal + " terminée");
 
     serieEnCours += 1;
@@ -548,7 +507,7 @@ function terminerSeance() {
     rendreHistorique();
 
     bipFinSeance();
-    parler(texteParle(PHRASES_VOIX.seanceFinie));
+    jouerAlerte("seanceFinie");
     montrerToast("Séance terminée — bravo", 3600);
 
     detecteur.pause = false;
@@ -583,7 +542,7 @@ function tickRepos() {
         enRepos = false;
         detecteur.pause = false;
         bipFinRepos();
-        parler(texteParle(PHRASES_VOIX.reposFini));
+        jouerAlerte("reposFini");
         majRestUI();
         relancerSerie();
     }
@@ -609,7 +568,7 @@ function majRestUI() {
 }
 
 // ============================================================
-// ALERTES POSTURE (visuel + voix)
+// ALERTES POSTURE (visuel + audio)
 // ============================================================
 
 function majAlertes(st) {
@@ -639,19 +598,19 @@ function majAlertes(st) {
             alerteCle = cle;
             alerteDepuis = maintenant;
         }
-        const persistant = maintenant - alerteDepuis >= ALERTE_VOIX_APRES_MS;
+        const persistant = maintenant - alerteDepuis >= ALERTE_AUDIO_APRES_MS;
         badge.textContent = message;
         badge.classList.toggle("visible", persistant);
 
         if (persistant &&
-            maintenant - dernierAlerteVoixAt > PERIODE_ALERTE_VOIX) {
-            dernierAlerteVoixAt = maintenant;
-            parler(texteParle(PHRASES_VOIX[cle]));
+            maintenant - dernierAlerteSonAt > PERIODE_ALERTE_AUDIO) {
+            dernierAlerteSonAt = maintenant;
+            jouerAlerte(cle);
         }
     } else {
         alerteCle = null;
         alerteDepuis = 0;
-        dernierAlerteVoixAt = 0;
+        dernierAlerteSonAt = 0;
         badge.classList.remove("visible");
     }
 }
@@ -680,26 +639,26 @@ function enregistrerHistorique(reps, series, dureeMs) {
 
 function rendreHistorique() {
     const hist = lireHistorique();
-    const summary = $(`hist-summary`);
+    const week = $(`hist-week`);
     const list = $(`hist-list`);
+    const clear = $(`hist-clear`);
     list.innerHTML = "";
-
-    if (hist.length === 0) {
-        summary.textContent = "Aucune séance enregistrée pour le moment.";
-        return;
-    }
+    if (clear) clear.classList.toggle("hidden", hist.length === 0);
 
     const maintenant = Date.now();
     const semaine = hist.filter(function (r) {
         return (maintenant - r.t) < 7 * 24 * 3600 * 1000;
     });
     const repsSemaine = semaine.reduce(function (acc, r) { return acc + r.reps; }, 0);
-    summary.textContent =
-        "Cette semaine : " + semaine.length + " séance" + (semaine.length > 1 ? "s" : "") +
-        " · " + repsSemaine + " rep" + (semaine.length > 1 || repsSemaine > 1 ? "s" : "") +
-        " comptés";
 
-    hist.slice(-6).reverse().forEach(function (r) {
+    if (week) {
+        week.textContent = hist.length === 0
+            ? "Aucune séance"
+            : semaine.length + " séance" + (semaine.length > 1 ? "s" : "") +
+              " · " + repsSemaine + " rep" + (repsSemaine > 1 ? "s" : "") + " (7 j)";
+    }
+
+    hist.slice(-10).reverse().forEach(function (r) {
         const li = document.createElement("li");
         const date = new Date(r.t);
         const texte = date.toLocaleDateString("fr-FR", {
@@ -708,11 +667,12 @@ function rendreHistorique() {
             hour: "2-digit",
             minute: "2-digit",
         });
+        const duree = r.dureeMs ? formaterDuree(r.dureeMs / 1000) : "";
         li.innerHTML =
             '<span class="h-date">' + texte + "</span>" +
-            '<span class="h-exo">' + escapeHtml(r.exo) + "</span>" +
-            '<span class="h-val">' + r.reps + " rep" + (r.reps > 1 ? "s" : "") +
-            (r.series > 1 ? " · " + r.series + " séries" : "") + "</span>";
+            '<span class="h-exo">' + escapeHtml(r.exo) +
+            (duree ? "<small>" + duree + "</small>" : "") + "</span>" +
+            '<span class="h-val">' + r.reps + " rep" + (r.reps > 1 ? "s" : "") + "</span>";
         list.appendChild(li);
     });
 }
@@ -1306,14 +1266,6 @@ function fermerFeuille() {
 // ALERTES PERSONNALISEES (phrases editables)
 // ============================================================
 
-function echapperHtml(s) {
-    return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-}
-
 const INFOS_ALERTES = {
     horsCadre: { titre: "Hors cadre", label: "Quand ton corps quitte la vue" },
     partiel: { titre: "Corps partiellement visible", label: "Quand on ne voit pas tout le corps" },
@@ -1323,36 +1275,28 @@ const INFOS_ALERTES = {
     reposFini: { titre: "Repos terminé", label: "Fin du temps de repos" }
 };
 
-function remplirFormAlertes() {
+const ICONE_LECTURE =
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='6 3 20 12 6 21 6 3'/></svg>";
+
+function remplirApercuAlertes() {
     const box = $(`alertes-body`);
     if (!box) return;
     box.innerHTML = "";
-    Object.keys(PHRASES_DEFAUT).forEach(function (k) {
+    Object.keys(AUDIO_ALERTES).forEach(function (k) {
         const info = INFOS_ALERTES[k] || { titre: k, label: "" };
-        const vals = PHRASES_VOIX[k] || { fr: "", wo: "" };
         const div = document.createElement("div");
         div.className = "phrase-card";
         div.innerHTML =
-            '<div class="phrase-titre">' + echapperHtml(info.titre) +
-            '<span>' + echapperHtml(info.label) + "</span></div>" +
-            '<label>Français</label>' +
-            '<textarea data-k="' + k + '" data-l="fr" rows="2">' + echapperHtml(vals.fr) + "</textarea>" +
-            '<label>Wolof</label>' +
-            '<textarea data-k="' + k + '" data-l="wo" rows="2">' + echapperHtml(vals.wo) + "</textarea>";
+            '<div class="phrase-titre">' + info.titre +
+            '<span>' + info.label + "</span></div>" +
+            '<button class="apercu-btn" data-cle="' + k + '" type="button">' +
+            ICONE_LECTURE + " Écouter</button>";
         box.appendChild(div);
     });
 }
 
-function lireFormAlertes() {
-    document.querySelectorAll("#alertes-body textarea").forEach(function (t) {
-        const k = t.dataset.k;
-        const l = t.dataset.l;
-        if (PHRASES_VOIX[k]) PHRASES_VOIX[k][l] = t.value;
-    });
-}
-
 function ouvrirAlertes() {
-    remplirFormAlertes();
+    remplirApercuAlertes();
     $(`modal-alertes`).classList.add("open");
     $(`modal-backdrop`).classList.add("visible");
 }
@@ -1360,18 +1304,6 @@ function ouvrirAlertes() {
 function fermerAlertes() {
     $(`modal-alertes`).classList.remove("open");
     $(`modal-backdrop`).classList.remove("visible");
-}
-
-let toastTimer = null;
-function afficherToast(msg) {
-    const el = $(`toast`);
-    if (!el) return;
-    el.textContent = msg;
-    el.classList.add("visible");
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () {
-        el.classList.remove("visible");
-    }, 2600);
 }
 
 // ============================================================
@@ -1395,20 +1327,11 @@ document.getElementById("alertes-btn").addEventListener("click", ouvrirAlertes);
 document.getElementById("alertes-close").addEventListener("click", fermerAlertes);
 document.getElementById("modal-backdrop").addEventListener("click", fermerAlertes);
 
-document.getElementById("alertes-save").addEventListener("click", function () {
-    lireFormAlertes();
-    sauvegarderPhrases();
-    fermerAlertes();
-    afficherToast("Alertes personnalisées enregistrées");
-});
-
-document.getElementById("alertes-reset").addEventListener("click", function () {
-    try {
-        localStorage.removeItem(CLE_PHRASES);
-    } catch (e) {}
-    PHRASES_VOIX = chargerPhrases();
-    remplirFormAlertes();
-    afficherToast("Phrases par défaut restaurées");
+document.getElementById("alertes-body").addEventListener("click", function (ev) {
+    const btn = ev.target.closest(".apercu-btn");
+    if (btn) {
+        jouerAlerte(btn.dataset.cle);
+    }
 });
 
 document.getElementById("hist-toggle").addEventListener("click", function () {
@@ -1440,6 +1363,7 @@ construireOptionsRepos();
 configurerFps();
 configurerSon();
 configurerFocus();
+prechargerAudios();
 rendreHistorique();
 
 document.getElementById("exo-title").textContent = detecteur.nom;
