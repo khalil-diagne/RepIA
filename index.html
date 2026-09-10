@@ -3,30 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#090D16">
+    <meta name="theme-color" content="#0A0A0B">
     <title>RepIA — Compteur d'exercices</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310B981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6.5 6.5 11 11'/><path d='m21 21-1-1'/><path d='m3 3 1 1'/><path d='m18 22 4-4'/><path d='m2 6 4-4'/><path d='m3 10 7-7'/><path d='m14 21 7-7'/></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6.5 6.5 11 11'/><path d='m21 21-1-1'/><path d='m3 3 1 1'/><path d='m18 22 4-4'/><path d='m2 6 4-4'/><path d='m3 10 7-7'/><path d='m14 21 7-7'/></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #090D16;
+            --bg: #0A0A0B;
             --surface: rgba(255, 255, 255, 0.03);
-            --surface-2: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.08);
-            --border-strong: rgba(255, 255, 255, 0.14);
+            --surface-2: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.1);
+            --border-strong: rgba(255, 255, 255, 0.18);
             --text: #F8FAFC;
-            --text-dim: #94A3B8;
-            --text-faint: #64748B;
-            --accent: #10B981;
-            --accent-soft: rgba(16, 185, 129, 0.1);
-            --accent-border: rgba(16, 185, 129, 0.35);
-            --accent-text: #34D399;
+            --text-dim: #A3AFBE;
+            --text-faint: #667085;
+            --gold: #D4AF37;
+            --gold-soft: rgba(212, 175, 55, 0.12);
+            --gold-border: rgba(212, 175, 55, 0.4);
+            --gold-text: #E8CB5E;
             --danger: #F87171;
             --danger-soft: rgba(248, 113, 113, 0.1);
             --danger-border: rgba(248, 113, 113, 0.3);
             --radius: 12px;
+            --bb-h: 60px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -35,20 +36,67 @@
 
         body {
             background:
-                radial-gradient(1100px 520px at 50% -12%, rgba(255, 255, 255, 0.04), transparent 60%),
+                radial-gradient(1000px 480px at 50% -12%, rgba(212, 175, 55, 0.05), transparent 60%),
                 var(--bg);
             color: var(--text);
             font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
             font-size: 15px;
             line-height: 1.5;
             min-height: 100vh;
+            overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
 
         .mono { font-family: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace; }
+        .display {
+            font-family: "Montserrat", "Inter", system-ui, sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
         .hidden { display: none !important; }
 
-        .wrap { max-width: 820px; margin: 0 auto; padding: 28px 20px 48px; }
+        .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 20px calc(var(--bb-h) + 24px); }
+        @media (min-width: 769px) {
+            .wrap { padding-bottom: 48px; }
+        }
+
+        /* ---------- Boutons ---------- */
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            padding: 10px 14px;
+            white-space: nowrap;
+        }
+        .btn:hover { border-color: var(--border-strong); background: var(--surface-2); }
+        .btn:active { transform: scale(0.97); }
+        .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+        .btn .ic-secondary { display: none; }
+        .btn.muted .ic-primary { display: none; }
+        .btn.muted .ic-secondary { display: inline-block; }
+        .btn.active .ic-primary { display: none; }
+        .btn.active .ic-secondary { display: inline-block; }
+        .btn.active {
+            color: var(--gold-text);
+            border-color: var(--gold-border);
+            background: var(--gold-soft);
+        }
 
         /* ---------- Header ---------- */
 
@@ -56,30 +104,32 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 14px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 18px;
         }
 
         .logo {
             display: flex;
             align-items: center;
             gap: 10px;
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
             font-size: 1.25rem;
-            font-weight: 700;
-            letter-spacing: -0.3px;
         }
-
         .logo .mark {
-            width: 34px; height: 34px;
+            width: 36px; height: 36px;
             border-radius: 9px;
             display: grid;
             place-items: center;
-            color: var(--accent-text);
+            color: var(--gold);
             background: var(--surface-2);
             border: 1px solid var(--border);
         }
-        .logo .mark svg { width: 18px; height: 18px; }
-        .logo .accent { color: var(--accent-text); }
+        .logo .mark svg { width: 19px; height: 19px; }
+        .logo .t1 { color: var(--text); }
+        .logo .t2 { color: var(--gold-text); }
 
         .header-right { display: flex; align-items: center; gap: 10px; }
 
@@ -87,7 +137,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-dim);
             padding: 7px 13px;
             border: 1px solid var(--border);
@@ -95,41 +145,14 @@
             background: var(--surface);
             white-space: nowrap;
         }
-
         .dot {
             width: 8px; height: 8px;
             border-radius: 50%;
             background: var(--text-faint);
             transition: background 0.3s;
         }
-        .dot.online { background: var(--accent); }
+        .dot.online { background: var(--gold); }
         .dot.offline { background: var(--danger); }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 0.83rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s, color 0.15s;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            padding: 8px 13px;
-            white-space: nowrap;
-        }
-        .btn:hover { border-color: var(--border-strong); background: var(--surface-2); }
-        .btn:active { transform: scale(0.98); }
-        .btn svg { width: 15px; height: 15px; }
-
-        .btn .ic-secondary { display: none; }
-        .btn.muted .ic-primary { display: none; }
-        .btn.muted .ic-secondary { display: inline; }
-        .btn.active .ic-primary { display: none; }
-        .btn.active .ic-secondary { display: inline; }
 
         /* ---------- Bannière ---------- */
 
@@ -141,16 +164,14 @@
             border-radius: 10px;
             padding: 11px 14px;
             font-size: 0.85rem;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
         .cam-banner.visible { display: block; }
 
-        /* ---------- Sélecteur d'exercices (segmenté) ---------- */
+        /* ---------- Sélecteur d'exercices (desktop) ---------- */
 
         .exercises {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: none;
             gap: 6px;
             margin-bottom: 12px;
             padding: 4px;
@@ -160,14 +181,18 @@
             overflow-x: auto;
             scrollbar-width: none;
         }
+        @media (min-width: 769px) {
+            .exercises { display: flex; align-items: center; justify-content: center; }
+        }
         .exercises::-webkit-scrollbar { display: none; }
 
         .exo {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 14px;
-            border-radius: 7px;
+            min-height: 44px;
+            padding: 10px 14px;
+            border-radius: 8px;
             border: 1px solid transparent;
             background: transparent;
             color: var(--text-dim);
@@ -178,13 +203,19 @@
         }
         .exo:hover { color: var(--text); }
         .exo.active {
-            background: var(--accent-soft);
-            border-color: var(--accent-border);
-            color: var(--accent-text);
+            background: var(--gold-soft);
+            border-color: var(--gold-border);
+            color: var(--gold-text);
         }
         .exo .icon { display: grid; place-items: center; }
-        .exo .icon svg { width: 15px; height: 15px; }
-        .exo .name { font-size: 0.85rem; font-weight: 500; }
+        .exo .icon svg { width: 16px; height: 16px; }
+        .exo .name {
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
         .exo .desc { display: none; }
 
         /* ---------- Barre d'outils (objectif / repos / chrono) ---------- */
@@ -207,51 +238,77 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            font-size: 0.62rem;
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 0.12em;
+            letter-spacing: 0.14em;
             color: var(--text-dim);
-            font-weight: 600;
+            font-weight: 700;
         }
         .ctl-label svg { width: 11px; height: 11px; }
 
         .ctl {
             display: flex;
             gap: 3px;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.25);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 9px;
             padding: 3px;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
+        .ctl::-webkit-scrollbar { display: none; }
         .ctl button {
             font-family: inherit;
             font-size: 0.78rem;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-dim);
             background: transparent;
             border: 1px solid transparent;
-            border-radius: 6px;
-            padding: 5px 10px;
+            border-radius: 7px;
+            min-height: 44px;
+            padding: 6px 11px;
             cursor: pointer;
             transition: background 0.15s, border-color 0.15s, color 0.15s;
         }
         .ctl button:hover { color: var(--text); }
         .ctl button.active {
-            background: var(--accent-soft);
-            border-color: var(--accent-border);
-            color: var(--accent-text);
+            background: var(--gold-soft);
+            border-color: var(--gold-border);
+            color: var(--gold-text);
+        }
+
+        .tool-alertes {
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gold-text);
+            background: var(--gold-soft);
+            border: 1px solid var(--gold-border);
+            border-radius: 9px;
+            min-height: 44px;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            white-space: nowrap;
+        }
+        .tool-alertes:hover {
+            background: rgba(212, 175, 55, 0.22);
+            border-color: rgba(212, 175, 55, 0.6);
         }
 
         .session-chip {
             display: inline-flex;
             align-items: center;
             gap: 7px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-dim);
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.25);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 7px 11px;
+            border-radius: 9px;
+            padding: 8px 12px;
             white-space: nowrap;
         }
         .session-chip svg { width: 13px; height: 13px; opacity: 0.7; }
@@ -259,23 +316,41 @@
 
         .select {
             font-family: inherit;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
             color: var(--text);
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 9px;
+            min-height: 44px;
             padding: 8px 10px;
             cursor: pointer;
             outline: none;
         }
         .select:hover { border-color: var(--border-strong); }
 
-        /* ---------- Vidéo / Monitoring ---------- */
+        /* ---------- Grille principale ---------- */
 
-        .stage { max-width: 720px; margin: 0 auto; }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            align-items: start;
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+        @media (min-width: 980px) {
+            .main-grid { grid-template-columns: minmax(0, 1fr) 280px; }
+            .video-col { grid-column: 1; }
+            .side { grid-column: 2; }
+        }
+
+        /* ---------- Vidéo ---------- */
 
         .video-wrap {
             position: relative;
+            width: 100%;
             background: #000;
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -309,16 +384,19 @@
         .overlay.top-left { top: 12px; left: 12px; }
         .overlay.top-center { top: 12px; left: 50%; transform: translateX(-50%); flex-direction: row; }
         .overlay.top-right { top: 12px; right: 12px; align-items: flex-end; }
+        .overlay.bottom-left { bottom: 12px; left: 12px; align-items: flex-start; }
         .overlay.bottom-right { bottom: 12px; right: 12px; align-items: flex-end; }
 
         .chip {
             display: inline-flex;
             align-items: center;
             gap: 7px;
-            font-size: 0.78rem;
-            font-weight: 500;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
             color: var(--text);
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid var(--border);
@@ -327,11 +405,11 @@
             white-space: nowrap;
         }
         .chip svg { width: 13px; height: 13px; opacity: 0.7; }
-        .chip.live { color: var(--accent-text); border-color: var(--accent-border); }
+        .chip.live { color: var(--gold-text); border-color: var(--gold-border); }
         .chip .pulse {
             width: 6px; height: 6px;
             border-radius: 50%;
-            background: var(--accent);
+            background: var(--gold);
             animation: pulse 1.6s ease-in-out infinite;
         }
         @keyframes pulse {
@@ -339,11 +417,45 @@
             50% { opacity: 0.35; }
         }
 
+        /* Compteur géant incrusté en haut à droite */
+        .counter-wrap {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 18px 12px;
+            text-align: right;
+        }
+        .counter-label {
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-dim);
+            font-weight: 700;
+        }
+        .counter-value {
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-size: 3.4rem;
+            line-height: 1;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--gold-text);
+            font-variant-numeric: tabular-nums;
+        }
+        .counter-value.tick { animation: tick 0.25s ease; }
+        @keyframes tick {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+
         .stat-badge {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid var(--border);
@@ -354,48 +466,19 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.68rem;
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-size: 0.62rem;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.1em;
             color: var(--text-dim);
+            font-weight: 700;
         }
         .stat-label svg { width: 12px; height: 12px; }
-        .stat-value { font-size: 0.95rem; font-weight: 700; color: var(--text); min-width: 24px; text-align: right; }
-
-        .counter {
-            position: absolute;
-            bottom: 12px;
-            left: 12px;
-            z-index: 2;
-            pointer-events: none;
-            padding: 8px 14px 8px 22px;
-            background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.15) 60%, transparent);
-            border-radius: 10px;
-        }
-        .counter-label {
-            font-size: 0.66rem;
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
-            color: var(--text-dim);
-            font-weight: 600;
-        }
-        .counter-value {
-            font-size: 3.25rem;
-            line-height: 1;
-            font-weight: 700;
-            color: var(--accent-text);
-            font-variant-numeric: tabular-nums;
-        }
-        .counter-value.tick { animation: tick 0.25s ease; }
-        @keyframes tick {
-            0% { transform: scale(1); }
-            30% { transform: scale(1.12); }
-            100% { transform: scale(1); }
-        }
+        .stat-value { font-size: 0.92rem; font-weight: 700; color: var(--text); min-width: 24px; text-align: right; }
 
         .alert-badge {
             position: absolute;
-            top: 54px;
+            top: 70px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 3;
@@ -406,9 +489,9 @@
             color: #FCA5A5;
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             font-weight: 500;
-            padding: 6px 12px;
+            padding: 7px 13px;
             border-radius: 8px;
             white-space: nowrap;
         }
@@ -423,43 +506,235 @@
             justify-content: center;
             flex-direction: column;
             gap: 6px;
-            background: rgba(6, 9, 14, 0.55);
+            background: rgba(6, 9, 14, 0.6);
             backdrop-filter: blur(3px);
             -webkit-backdrop-filter: blur(3px);
             pointer-events: none;
         }
         .rest-overlay.visible { display: flex; }
         .rest-overlay .label {
+            font-family: "Montserrat", "Inter", sans-serif;
             font-size: 0.72rem;
             text-transform: uppercase;
-            letter-spacing: 0.22em;
+            letter-spacing: 0.24em;
             color: var(--text-dim);
-            font-weight: 600;
+            font-weight: 700;
         }
         .rest-overlay .num {
-            font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+            font-family: "Montserrat", "Inter", sans-serif;
             font-size: 5rem;
-            font-weight: 700;
-            color: var(--text);
+            font-weight: 900;
+            color: var(--gold-text);
             line-height: 1;
         }
 
-        .stage-foot {
-            display: flex;
+        /* ---------- Mini contrôles (mobile : fps / son) ---------- */
+
+        .mini-row {
+            display: none;
             align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 14px;
+            gap: 8px;
+            margin-top: 10px;
         }
-        .foot-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .btn-reset { color: var(--text-dim); }
-        .btn-reset:hover { color: var(--text); border-color: var(--border-strong); }
+        .mini-row .select { flex: 1; }
+
+        /* ---------- Coté droit (desktop) ---------- */
+
+        .side {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+        @media (min-width: 980px) {
+            .side { display: flex; }
+        }
+        .side-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .side-card .ctl-label { margin-bottom: 2px; }
+        .side-hint {
+            font-size: 0.76rem;
+            color: var(--text-faint);
+            line-height: 1.5;
+        }
+
+        /* ---------- Mode focus / plein écran ---------- */
+
+        .exit-focus {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 6;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+        }
+        .exit-focus:hover { border-color: var(--border-strong); }
+        .exit-focus svg { width: 20px; height: 20px; }
+
+        .exo-focus-wrap {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 6;
+            display: none;
+            max-width: 86%;
+            gap: 6px;
+            padding: 4px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .exo-focus-wrap::-webkit-scrollbar { display: none; }
+        .exo-focus-wrap .exo {
+            margin: 0;
+            padding: 6px 10px;
+            min-height: 40px;
+            font-size: 0.72rem;
+            gap: 6px;
+            border-radius: 8px;
+        }
+        .exo-focus-wrap .exo .icon svg { width: 13px; height: 13px; }
+        .exo-focus-wrap .exo .name { font-size: 0.72rem; }
+
+        body.focus .wrap { max-width: none; padding: 0; }
+        body.focus header,
+        body.focus .exercises,
+        body.focus .toolbar,
+        body.focus .mini-row,
+        body.focus .side,
+        body.focus .history,
+        body.focus footer,
+        body.focus .cam-banner,
+        body.focus .bottom-bar,
+        body.focus .toast { display: none; }
+
+        body.focus .main-grid { display: block; max-width: none; }
+        body.focus .video-wrap { border-radius: 0; border: none; }
+        body.focus .video-wrap canvas { max-height: 100vh; }
+        body.focus .exit-focus { display: flex; }
+        body.focus .exo-focus-wrap { display: flex; top: auto; bottom: 16px; }
+        body.focus .overlay.top-left { display: none; }
+        body.focus .counter-wrap { padding: 14px 26px 16px; }
+        body.focus .counter-label { font-size: 0.78rem; }
+        body.focus .counter-value { font-size: 12rem; }
+        body.focus .stat-label { font-size: 0.72rem; }
+        body.focus .stat-value { font-size: 1.25rem; }
+
+        /* ---------- Barre d'actions fixe (mobile) ---------- */
+
+        .bottom-bar {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            z-index: 40;
+            display: flex;
+            border-top: 1px solid var(--border);
+            background: rgba(12, 12, 14, 0.94);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .bb-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            min-height: var(--bb-h);
+            padding: 10px 6px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            cursor: pointer;
+            transition: color 0.15s, background 0.15s;
+        }
+        .bb-btn + .bb-btn { border-left: 1px solid var(--border); }
+        .bb-btn:active { background: rgba(255, 255, 255, 0.05); }
+        .bb-btn svg { width: 18px; height: 18px; margin-bottom: 1px; }
+        @media (min-width: 769px) {
+            .bottom-bar { display: none; }
+        }
+
+        /* ---------- Feuille d'exercices (mobile) ---------- */
+
+        .exo-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 45;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .exo-backdrop.visible { opacity: 1; pointer-events: auto; }
+
+        .exo-sheet {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            z-index: 50;
+            transform: translateY(100%);
+            transition: transform 0.25s ease;
+            background: #101014;
+            border-top: 1px solid var(--border);
+            border-radius: 16px 16px 0 0;
+            padding: 10px 14px calc(var(--bb-h) + 14px + env(safe-area-inset-bottom));
+            max-height: 62vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .exo-sheet::-webkit-scrollbar { display: none; }
+        .exo-sheet.open { transform: translateY(0); }
+        .exo-sheet .sheet-title {
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 8px 0 10px;
+        }
+        .exo-sheet .exo {
+            width: 100%;
+            min-height: 52px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 4px;
+            background: var(--surface);
+            border: 1px solid transparent;
+        }
+        .exo-sheet .exo.active { border-color: var(--gold-border); }
+        .exo-sheet .exo .name { flex: 1; }
 
         /* ---------- Historique ---------- */
 
         .history {
-            margin-top: 28px;
+            margin-top: 26px;
             border: 1px solid var(--border);
             border-radius: 10px;
             background: var(--surface);
@@ -471,13 +746,16 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            padding: 13px 15px;
+            min-height: 48px;
+            padding: 12px 15px;
             background: transparent;
             border: none;
             color: var(--text);
-            font-family: inherit;
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
             cursor: pointer;
         }
         .history .chevron { transition: transform 0.2s; }
@@ -495,17 +773,17 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 8px 2px;
+            padding: 9px 2px;
             border-top: 1px solid var(--border);
             font-size: 0.82rem;
         }
         .hist-list .h-date { color: var(--text-faint); font-size: 0.75rem; width: 96px; flex-shrink: 0; }
         .hist-list .h-exo { flex: 1; color: var(--text); font-weight: 500; }
-        .hist-list .h-val { color: var(--accent-text); font-family: "JetBrains Mono", Consolas, monospace; }
+        .hist-list .h-val { color: var(--gold-text); font-family: "JetBrains Mono", Consolas, monospace; }
 
         .hist-clear {
             margin-top: 10px;
-            padding: 7px 12px;
+            padding: 8px 12px;
             font-family: inherit;
             font-size: 0.75rem;
             color: var(--text-dim);
@@ -517,7 +795,7 @@
         .hist-clear:hover { color: var(--danger); border-color: var(--danger-border); }
 
         footer {
-            margin-top: 28px;
+            margin-top: 26px;
             padding-top: 16px;
             border-top: 1px solid var(--border);
             text-align: center;
@@ -533,61 +811,212 @@
             left: 50%;
             transform: translateX(-50%) translateY(-8px);
             z-index: 60;
-            background: rgba(10, 14, 20, 0.94);
-            border: 1px solid var(--accent-border);
-            color: var(--accent-text);
-            padding: 10px 16px;
+            background: rgba(12, 12, 14, 0.95);
+            border: 1px solid var(--gold-border);
+            color: var(--gold-text);
+            padding: 11px 17px;
             border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.25s, transform 0.25s;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
         .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* ---------- Mode focus ---------- */
+        /* ---------- Modale alertes personnalisées ---------- */
 
-        body.focus .wrap { max-width: none; padding: 0; }
-        body.focus header,
-        body.focus .exercises,
-        body.focus .toolbar,
-        body.focus .stage-foot,
-        body.focus .history,
-        body.focus footer,
-        body.focus .cam-banner,
-        body.focus .toast { display: none; }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 70;
+            background: rgba(0, 0, 0, 0.66);
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        .modal-backdrop.visible { opacity: 1; pointer-events: auto; }
 
-        body.focus .stage { max-width: none; }
-        body.focus .video-wrap { border-radius: 0; border: none; }
-        body.focus .video-wrap canvas { max-height: 100vh; }
-        body.focus .counter { left: 28px; bottom: 26px; padding: 10px 18px; }
-        body.focus .counter-label { font-size: 0.8rem; }
-        body.focus .counter-value { font-size: 13rem; }
-        body.focus .stat-label { font-size: 0.8rem; }
-        body.focus .stat-value { font-size: 1.3rem; }
+        .modal {
+            position: fixed;
+            z-index: 71;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.96);
+            width: min(560px, calc(100vw - 28px));
+            max-height: calc(100vh - 40px);
+            max-height: calc(100dvh - 40px);
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            border-radius: 14px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+        }
+        .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
 
-        @media (max-width: 620px) {
-            .wrap { padding: 20px 14px 36px; }
-            header { flex-wrap: wrap; }
-            .status { font-size: 0.75rem; padding: 6px 11px; }
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 16px 18px 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-head h3 {
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 0.95rem;
+        }
+        .modal-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .modal-close:hover { background: var(--surface-2); color: var(--text); }
+        .modal-close svg { width: 17px; height: 17px; }
+
+        .modal-note {
+            padding: 12px 18px 2px;
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            line-height: 1.55;
+        }
+        .modal-note strong { color: var(--gold-text); }
+
+        .modal-body {
+            padding: 10px 18px 18px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .phrase-card {
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .phrase-titre {
+            font-family: "Montserrat", "Inter", sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text);
+        }
+        .phrase-titre span {
+            display: block;
+            font-family: "Inter", sans-serif;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.72rem;
+            color: var(--text-faint);
+            margin-top: 2px;
+        }
+        .phrase-card label {
+            display: block;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-dim);
+            margin: 10px 0 4px;
+            font-weight: 700;
+        }
+        .phrase-card textarea {
+            width: 100%;
+            resize: vertical;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.86rem;
+            line-height: 1.45;
+            padding: 8px 10px;
+            min-height: 44px;
+        }
+        .phrase-card textarea:focus {
+            outline: none;
+            border-color: var(--gold-border);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .modal-foot {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 12px 18px 18px;
+            border-top: 1px solid var(--border);
+        }
+        .btn-gold {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: #1A1605;
+            font-weight: 700;
+        }
+        .btn-gold:hover { background: var(--gold-text); border-color: var(--gold-text); }
+
+        /* ---------- Responsive / orientation ---------- */
+
+        @media (max-width: 768px) {
+            .wrap { padding: 18px 14px calc(var(--bb-h) + 26px); }
+            header { margin-bottom: 14px; }
+            .logo { font-size: 1.1rem; }
+            .status { font-size: 0.72rem; padding: 6px 11px; }
             .cam-toggle span { display: none; }
 
-            .exo { padding: 8px 12px; }
-            .exo .name { font-size: 0.8rem; }
-
             .toolbar { padding: 10px; }
-            .session-chip { font-size: 0.75rem; }
+            .ctl button { min-height: 44px; padding: 5px 10px; }
+            .session-chip { padding: 7px 10px; }
 
-            .counter-value { font-size: 2.6rem; }
-            body.focus .counter-value { font-size: 8rem; }
-            .stat-value { font-size: 0.85rem; }
-            .overlay.bottom-right { bottom: 10px; right: 10px; }
-            .counter { left: 10px; bottom: 10px; }
-            .video-wrap canvas { max-height: 54vh; }
-            .alert-badge { top: 50px; font-size: 0.7rem; white-space: normal; max-width: 80%; text-align: center; }
+            .mini-row { display: flex; }
+
+            .counter-value { font-size: 2.7rem; }
+            .counter-wrap { padding: 8px 13px 10px; }
+            .overlay.top-left { top: 8px; left: 8px; }
+            .overlay.top-right { top: 8px; right: 8px; }
+            .overlay.top-center { top: 8px; }
+            .overlay.bottom-left { bottom: 8px; left: 8px; }
+            .overlay.bottom-right { bottom: 8px; right: 8px; }
+            .video-wrap canvas { max-height: 58vh; }
+            .alert-badge { top: 64px; font-size: 0.7rem; white-space: normal; max-width: 82%; text-align: center; }
             .rest-overlay .num { font-size: 4rem; }
+
+            body.focus .counter-value { font-size: 8rem; }
+            body.focus .exit-focus { top: 8px; left: 8px; }
+            body.focus .exo-focus-wrap { max-width: 94%; }
+            body.focus .exo-focus-wrap { bottom: 10px; }
+            body.focus .overlay.top-center,
+            body.focus .overlay.bottom-left { display: none; }
+        }
+
+        @media (orientation: landscape) and (max-height: 560px) {
+            .video-wrap canvas { max-height: calc(100vh - 96px); }
+            .wrap { padding-top: 10px; }
+            .counter-value { font-size: 2.4rem; }
+            .counter-wrap { padding: 6px 11px 8px; }
+            body.focus .counter-value { font-size: 6rem; }
+            .exo-focus-wrap { max-width: 70%; }
         }
     </style>
 </head>
@@ -600,7 +1029,7 @@
                         <path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>
                     </svg>
                 </span>
-                <span>Rep<span class="accent">IA</span></span>
+                <span class="t1">Rep</span><span class="t2">IA</span>
             </a>
             <div class="header-right">
                 <button class="btn cam-toggle" id="cam-toggle" type="button" title="Basculer caméra avant / arrière">
@@ -608,7 +1037,7 @@
                         <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
                         <circle cx="12" cy="13" r="3"/>
                     </svg>
-                    <span>Caméra avant / arrière</span>
+                    <span>Caméra</span>
                 </button>
                 <div class="status">
                     <span class="dot" id="dot"></span>
@@ -650,101 +1079,96 @@
                 </svg>
                 <span class="mono val" id="session-timer">00:00</span>
             </span>
+
+            <div class="ctl-group">
+                <span class="ctl-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>
+                    </svg>
+                    Alertes
+                </span>
+                <button class="tool-alertes" id="alertes-btn" type="button">Personnaliser</button>
+            </div>
         </div>
 
-        <main class="stage">
-            <div class="video-wrap">
-                <video id="video" autoplay playsinline muted></video>
-                <canvas id="canvas"></canvas>
+        <div class="main-grid">
+            <div class="video-col">
+                <div class="video-wrap">
+                    <video id="video" autoplay playsinline muted></video>
+                    <canvas id="canvas"></canvas>
 
-                <div class="overlay top-left">
-                    <span class="chip">
+                    <button class="exit-focus" id="exit-focus" type="button" title="Quitter le mode focus">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>
-                        </svg>
-                        <span id="exo-title">Pompes</span>
-                    </span>
-                </div>
-
-                <div class="overlay top-center">
-                    <span class="chip" id="serie-progress">Libre</span>
-                    <span class="chip live hidden" id="rest-timer">Repos</span>
-                </div>
-
-                <div class="overlay top-right">
-                    <span class="chip live">
-                        <span class="pulse"></span>
-                        <span>LIVE</span>
-                    </span>
-                    <span class="chip mono"><span id="perf"></span></span>
-                </div>
-
-                <div class="overlay bottom-right">
-                    <div class="stat-badge">
-                        <span class="stat-label">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/>
-                            </svg>
-                            Position
-                        </span>
-                        <span class="stat-value mono" id="stage">&mdash;</span>
-                    </div>
-                    <div class="stat-badge">
-                        <span class="stat-label">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z"/>
-                                <path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>
-                            </svg>
-                            Angle coude
-                        </span>
-                        <span class="stat-value mono" id="angle">&mdash;</span>
-                    </div>
-                </div>
-
-                <div class="counter">
-                    <div class="counter-label">Répétitions</div>
-                    <div class="counter-value mono" id="compteur">0</div>
-                </div>
-
-                <div class="alert-badge" id="alert-badge"></div>
-
-                <div class="rest-overlay" id="rest-overlay">
-                    <span class="label">Repos</span>
-                    <span class="num mono" id="rest-num">30</span>
-                </div>
-            </div>
-
-            <div class="stage-foot">
-                <button class="btn btn-reset" id="reset-btn" type="button">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
-                    </svg>
-                    Réinitialiser
-                </button>
-
-                <div class="foot-right">
-                    <label class="ctl-label" for="fps-select" title="Fréquence de détection">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-                        </svg>
-                    </label>
-                    <select class="select" id="fps-select" title="Fréquence de détection">
-                        <option value="auto">Auto</option>
-                        <option value="30">30 fps</option>
-                        <option value="20">20 fps</option>
-                        <option value="12">12 fps</option>
-                        <option value="6">6 fps éco</option>
-                    </select>
-
-                    <button class="btn" id="focus-btn" type="button" title="Mode focus plein écran">
-                        <svg class="ic-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
-                        </svg>
-                        <svg class="ic-secondary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+                            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
                         </svg>
                     </button>
 
+                    <div class="exo-focus-wrap" id="exo-focus"></div>
+
+                    <div class="overlay top-left">
+                        <span class="chip">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>
+                            </svg>
+                            <span id="exo-title">Pompes</span>
+                        </span>
+                    </div>
+
+                    <div class="overlay top-center">
+                        <span class="chip" id="serie-progress">Libre</span>
+                        <span class="chip live hidden" id="rest-timer">Repos</span>
+                    </div>
+
+                    <div class="overlay top-right">
+                        <div class="counter-wrap">
+                            <div class="counter-label">Répétitions</div>
+                            <div class="counter-value" id="compteur">0</div>
+                        </div>
+                        <span class="chip live">
+                            <span class="pulse"></span>
+                            <span>Live</span>
+                        </span>
+                        <span class="chip mono"><span id="perf"></span></span>
+                    </div>
+
+                    <div class="overlay bottom-left">
+                        <div class="stat-badge">
+                            <span class="stat-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/>
+                                </svg>
+                                Position
+                            </span>
+                            <span class="stat-value mono" id="stage">&mdash;</span>
+                        </div>
+                        <div class="stat-badge">
+                            <span class="stat-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z"/>
+                                    <path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>
+                                </svg>
+                                Angle
+                            </span>
+                            <span class="stat-value mono" id="angle">&mdash;</span>
+                        </div>
+                    </div>
+
+                    <div class="alert-badge" id="alert-badge"></div>
+
+                    <div class="rest-overlay" id="rest-overlay">
+                        <span class="label">Repos</span>
+                        <span class="num" id="rest-num">30</span>
+                    </div>
+                </div>
+
+                <div class="mini-row">
+                    <select class="select" id="fps-select" title="Fréquence de détection">
+                        <option value="auto">Fps : auto</option>
+                        <option value="30">Fps : 30</option>
+                        <option value="20">Fps : 20</option>
+                        <option value="12">Fps : 12</option>
+                        <option value="6">Fps : 6 éco</option>
+                    </select>
                     <button class="btn" id="sound-btn" type="button" title="Son &amp; voix">
                         <svg class="ic-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
@@ -755,7 +1179,56 @@
                     </button>
                 </div>
             </div>
-        </main>
+
+            <aside class="side">
+                <div class="side-card">
+                    <span class="ctl-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                        </svg>
+                        Détection
+                    </span>
+                    <select class="select" id="fps-select-desktop" title="Fréquence de détection">
+                        <option value="auto">Fps : auto</option>
+                        <option value="30">Fps : 30</option>
+                        <option value="20">Fps : 20</option>
+                        <option value="12">Fps : 12</option>
+                        <option value="6">Fps : 6 éco</option>
+                    </select>
+                </div>
+
+                <div class="side-card">
+                    <button class="btn" id="focus-btn" type="button" title="Mode focus plein écran">
+                        <svg class="ic-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+                        </svg>
+                        <svg class="ic-secondary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+                        </svg>
+                        Focus
+                    </button>
+                    <button class="btn" id="sound-btn-desktop" type="button" title="Son &amp; voix">
+                        <svg class="ic-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                        </svg>
+                        <svg class="ic-secondary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/>
+                        </svg>
+                        Son
+                    </button>
+                    <button class="btn" id="reset-btn" type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+                        </svg>
+                        Réinitialiser
+                    </button>
+                </div>
+
+                <div class="side-hint">
+                    Recule pour que tout le corps soit visible et reste face à la caméra. La détection tourne à 100 % sur ton appareil.
+                </div>
+            </aside>
+        </div>
 
         <section class="history">
             <button class="h-toggle" id="hist-toggle" type="button" aria-expanded="false">
@@ -772,11 +1245,60 @@
         </section>
 
         <footer>
-            Détection 100 % locale&nbsp;·&nbsp;aucune image quitte votre navigateur
+            RepIA · Détection 100 % locale — aucune image ne quitte votre navigateur
         </footer>
     </div>
 
+    <div class="bottom-bar" id="bottom-bar">
+        <button class="bb-btn" id="bb-exercices" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>
+            </svg>
+            Exercices
+        </button>
+        <button class="bb-btn" id="bb-focus" type="button" title="Mode focus plein écran">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+            </svg>
+            Focus
+        </button>
+        <button class="bb-btn" id="bb-reset" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+            </svg>
+            Réinitialiser
+        </button>
+    </div>
+
+    <div class="exo-backdrop" id="exo-backdrop"></div>
+    <div class="exo-sheet" id="exo-sheet">
+        <div class="sheet-title" id="sheet-title">Choisir l'exercice</div>
+        <div id="sheet-selector"></div>
+    </div>
+
     <div class="toast" id="toast"></div>
+
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal" id="modal-alertes">
+        <div class="modal-head">
+            <h3>Alertes vocales personnalisées</h3>
+            <button class="modal-close" id="alertes-close" type="button" title="Fermer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                </svg>
+            </button>
+        </div>
+        <p class="modal-note">
+            Modifie les phrases lues par la voix pendant la séance. Si une voix <strong>wolof</strong>
+            est disponible sur ton appareil, le texte <strong>Wolof</strong> est prononcé ; sinon la voix
+            française lit le <strong>français</strong> puis le <strong>wolof</strong>.
+        </p>
+        <div class="modal-body" id="alertes-body"></div>
+        <div class="modal-foot">
+            <button class="btn" id="alertes-reset" type="button">Réinitialiser</button>
+            <button class="btn btn-gold" id="alertes-save" type="button">Enregistrer</button>
+        </div>
+    </div>
 
     <script type="module" src="/static/js/app.js"></script>
 </body>

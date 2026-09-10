@@ -15,7 +15,8 @@ const SEUIL_DIMINUER = 50;
 const SEUIL_AUGMENTER = 22;
 
 const ALPHA_LISSAGE = 0.55;
-const PERIODE_ALERTE_VOIX = 12000;
+const PERIODE_ALERTE_VOIX = 30000;
+const ALERTE_VOIX_APRES_MS = 3000;
 
 const HIST_KEY = "repia_historique";
 const PREFS_KEY = "repia_prefs";
@@ -98,6 +99,8 @@ let sessionTimerId = null;
 let sonActif = true;
 let audioCtx = null;
 let dernierAlerteVoixAt = 0;
+let alerteCle = null;
+let alerteDepuis = 0;
 
 let focusActif = false;
 
@@ -206,14 +209,97 @@ function bipFinSeance() {
     bip(1568, 0.28, 0.15, 0.42);
 }
 
+const PHRASES_DEFAUT = {
+    horsCadre: {
+        fr: "Positionne-toi dans le cadre",
+        wo: "Dugil ci biir kamer bi, duñu la gis"
+    },
+    partiel: {
+        fr: "Recule, ton corps entier doit être visible",
+        wo: "Réculal sëpp, duñu mën a gis sa yaram bépp"
+    },
+    gainage: {
+        fr: "Entre dans la position de gainage",
+        wo: "Dugil ci posisyon gainage bi, nekk fa rekk"
+    },
+    serieFinie: {
+        fr: "Série terminée. Repos.",
+        wo: "Séri bi jeex na! Noppal bu baax"
+    },
+    seanceFinie: {
+        fr: "Séance terminée. Bravo !",
+        wo: "Séance bi jeex na! Jeral sa bop"
+    },
+    reposFini: {
+        fr: "Repos terminé",
+        wo: "Nopp bi jeex na! Duggil ci biir"
+    }
+};
+
+const CLE_PHRASES = "repia_phrases";
+
+function chargerPhrases() {
+    const R = {};
+    Object.keys(PHRASES_DEFAUT).forEach(function (k) {
+        R[k] = { fr: PHRASES_DEFAUT[k].fr, wo: PHRASES_DEFAUT[k].wo };
+    });
+    try {
+        const brut = localStorage.getItem(CLE_PHRASES);
+        if (brut) {
+            const sauve = JSON.parse(brut);
+            Object.keys(sauve).forEach(function (k) {
+                if (R[k] && sauve[k]) {
+                    if (typeof sauve[k].fr === "string") R[k].fr = sauve[k].fr;
+                    if (typeof sauve[k].wo === "string") R[k].wo = sauve[k].wo;
+                }
+            });
+        }
+    } catch (e) {}
+    return R;
+}
+
+function sauvegarderPhrases() {
+    try {
+        localStorage.setItem(CLE_PHRASES, JSON.stringify(PHRASES_VOIX));
+    } catch (e) {}
+}
+
+let PHRASES_VOIX = chargerPhrases();
+
+let voixTTS = null;
+let voixWolofDispo = false;
+
+function rafraichirVoixTTS() {
+    if (!("speechSynthesis" in window)) return;
+    const vs = window.speechSynthesis.getVoices();
+    if (!vs.length) return;
+    const wo = vs.find(function (v) {
+        return /^wo([-_]|$)/i.test(v.lang);
+    }) || null;
+    voixWolofDispo = Boolean(wo);
+    voixTTS = wo || vs.find(function (v) {
+        return /^fr([-_]|$)/i.test(v.lang);
+    }) || null;
+}
+
+if ("speechSynthesis" in window) {
+    rafraichirVoixTTS();
+    window.speechSynthesis.onvoiceschanged = rafraichirVoixTTS;
+}
+
+function texteParle(v) {
+    return voixWolofDispo ? v.wo : (v.fr + (v.wo ? ". " + v.wo : ""));
+}
+
 function parler(texte) {
     if (!sonActif || !("speechSynthesis" in window)) return;
     try {
-        window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(texte);
-        u.lang = "fr-FR";
+        u.lang = voixTTS ? voixTTS.lang : "fr-FR";
+        if (voixTTS) u.voice = voixTTS;
         u.rate = 1.05;
         u.volume = 0.9;
+        window.speechSynthesis.cancel();
         window.speechSynthesis.speak(u);
     } catch (e) {}
 }
@@ -258,8 +344,9 @@ function lisserPose(brut) {
 // CARTES D'EXERCICES (sélecteur segmenté)
 // ============================================================
 
-function buildCards() {
-    const box = $(`exercises`);
+function construireSelecteur(conteneur) {
+    const box = $(conteneur);
+    if (!box) return;
     box.innerHTML = "";
     Object.keys(EXERCICES).forEach(function (id) {
         const cfg = EXERCICES[id];
@@ -279,7 +366,10 @@ function buildCards() {
 }
 
 function selectExo(id) {
-    if (id === detecteur.typeExo) return;
+    if (id === detecteur.typeExo) {
+        fermerFeuille();
+        return;
+    }
 
     detecteur = new DetecteurExercice(id);
     $(`exo-title`).textContent = detecteur.nom;
@@ -287,6 +377,8 @@ function selectExo(id) {
     document.querySelectorAll(".exo").forEach(function (el) {
         el.classList.toggle("active", el.dataset.id === id);
     });
+
+    fermerFeuille();
 
     pose = null;
     poseLisse = null;
@@ -429,7 +521,7 @@ function verifierSerie(v) {
 
     totalRepsSeance += v;
     bipSerie();
-    parler("Série terminée. Repos.");
+    parler(texteParle(PHRASES_VOIX.serieFinie));
     montrerToast("Série " + serieEnCours + "/" + seriesTotal + " terminée");
 
     serieEnCours += 1;
@@ -456,7 +548,7 @@ function terminerSeance() {
     rendreHistorique();
 
     bipFinSeance();
-    parler("Séance terminée. Bravo !");
+    parler(texteParle(PHRASES_VOIX.seanceFinie));
     montrerToast("Séance terminée — bravo", 3600);
 
     detecteur.pause = false;
@@ -491,7 +583,7 @@ function tickRepos() {
         enRepos = false;
         detecteur.pause = false;
         bipFinRepos();
-        parler("Repos terminé");
+        parler(texteParle(PHRASES_VOIX.reposFini));
         majRestUI();
         relancerSerie();
     }
@@ -522,32 +614,45 @@ function majRestUI() {
 
 function majAlertes(st) {
     const badge = $(`alert-badge`);
+    let cle = null;
     let message = null;
-    let voix = null;
 
     if (cameraActif) {
         if (!pose) {
+            cle = "horsCadre";
             message = "Positionne-toi dans le cadre";
-            voix = "Recule, ton corps entier doit être visible";
         } else if (st.temps) {
             if (!st.positionValide) {
+                cle = "gainage";
                 message = "Adopte la position de gainage";
-                voix = "Entre dans la position de gainage";
             }
         } else if (st.angleCoude == null) {
-            message = "Ajuste ta position — corps non visible";
-            voix = "Recule, ton corps entier doit être visible";
+            cle = "partiel";
+            message = "Corps partiellement visible";
         }
     }
 
-    badge.classList.toggle("visible", Boolean(message));
-    if (message) {
-        badge.textContent = message;
-        const now = Date.now();
-        if (voix && now - dernierAlerteVoixAt > PERIODE_ALERTE_VOIX) {
-            dernierAlerteVoixAt = now;
-            parler(voix);
+    const maintenant = Date.now();
+
+    if (cle) {
+        if (alerteCle !== cle) {
+            alerteCle = cle;
+            alerteDepuis = maintenant;
         }
+        const persistant = maintenant - alerteDepuis >= ALERTE_VOIX_APRES_MS;
+        badge.textContent = message;
+        badge.classList.toggle("visible", persistant);
+
+        if (persistant &&
+            maintenant - dernierAlerteVoixAt > PERIODE_ALERTE_VOIX) {
+            dernierAlerteVoixAt = maintenant;
+            parler(texteParle(PHRASES_VOIX[cle]));
+        }
+    } else {
+        alerteCle = null;
+        alerteDepuis = 0;
+        dernierAlerteVoixAt = 0;
+        badge.classList.remove("visible");
     }
 }
 
@@ -683,34 +788,41 @@ function construireOptionsRepos() {
 }
 
 function configurerFps() {
-    const sel = $(`fps-select`);
-    sel.value = PREFS.fps;
-    fpsMax = sel.value === "auto" ? 0 : Number(sel.value);
-
-    sel.addEventListener("change", function () {
-        PREFS.fps = sel.value;
-        fpsMax = sel.value === "auto" ? 0 : Number(sel.value);
-        sauvegarderPrefs();
+    const selects = document.querySelectorAll("#fps-select, #fps-select-desktop");
+    selects.forEach(function (sel) {
+        sel.value = PREFS.fps;
+        sel.addEventListener("change", function () {
+            PREFS.fps = sel.value;
+            fpsMax = sel.value === "auto" ? 0 : Number(sel.value);
+            sauvegarderPrefs();
+            selects.forEach(function (autre) { autre.value = PREFS.fps; });
+        });
     });
+    fpsMax = PREFS.fps === "auto" ? 0 : Number(PREFS.fps);
 }
 
 function configurerSon() {
+    const boutons = document.querySelectorAll("#sound-btn, #sound-btn-desktop");
     sonActif = PREFS.son;
     majBtnSon();
-    $(`sound-btn`).addEventListener("click", function () {
-        sonActif = !sonActif;
-        PREFS.son = sonActif;
-        sauvegarderPrefs();
-        majBtnSon();
-        garantirAudio();
-        if (!sonActif && audioCtx) {
-            audioCtx.suspend();
-        }
+    boutons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            sonActif = !sonActif;
+            PREFS.son = sonActif;
+            sauvegarderPrefs();
+            majBtnSon();
+            garantirAudio();
+            if (!sonActif && audioCtx) {
+                audioCtx.suspend();
+            }
+        });
     });
 }
 
 function majBtnSon() {
-    $(`sound-btn`).classList.toggle("muted", !sonActif);
+    document.querySelectorAll("#sound-btn, #sound-btn-desktop").forEach(function (b) {
+        b.classList.toggle("muted", !sonActif);
+    });
 }
 
 function configurerFocus() {
@@ -761,9 +873,9 @@ function majBtnFocus() {
 function dessinerPose(pose, W, H) {
     if (!pose) return;
 
-    const couleurLigne = "rgba(52, 211, 153, 0.9)";
+    const couleurLigne = "rgba(232, 203, 94, 0.9)";
     const couleurPoint = "rgba(255, 255, 255, 0.85)";
-    const couleurMenton = "rgba(52, 211, 153, 0.95)";
+    const couleurMenton = "rgba(232, 203, 94, 0.95)";
 
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
@@ -812,7 +924,7 @@ function dessinerGuide(W, H) {
     const chevillesY = H * 0.88;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
     ctx.lineWidth = Math.max(2.5, W * 0.005);
     ctx.lineCap = "round";
 
@@ -1177,6 +1289,92 @@ async function demarrerCamera(facing) {
 }
 
 // ============================================================
+// FEUILLE D'EXERCICES (mobile)
+// ============================================================
+
+function ouvrirFeuille() {
+    $(`exo-sheet`).classList.add("open");
+    $(`exo-backdrop`).classList.add("visible");
+}
+
+function fermerFeuille() {
+    $(`exo-sheet`).classList.remove("open");
+    $(`exo-backdrop`).classList.remove("visible");
+}
+
+// ============================================================
+// ALERTES PERSONNALISEES (phrases editables)
+// ============================================================
+
+function echapperHtml(s) {
+    return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+const INFOS_ALERTES = {
+    horsCadre: { titre: "Hors cadre", label: "Quand ton corps quitte la vue" },
+    partiel: { titre: "Corps partiellement visible", label: "Quand on ne voit pas tout le corps" },
+    gainage: { titre: "Gainage", label: "Quand la position de gainage n'est pas valide" },
+    serieFinie: { titre: "Série terminée", label: "Fin d'une série" },
+    seanceFinie: { titre: "Séance terminée", label: "Fin de la séance" },
+    reposFini: { titre: "Repos terminé", label: "Fin du temps de repos" }
+};
+
+function remplirFormAlertes() {
+    const box = $(`alertes-body`);
+    if (!box) return;
+    box.innerHTML = "";
+    Object.keys(PHRASES_DEFAUT).forEach(function (k) {
+        const info = INFOS_ALERTES[k] || { titre: k, label: "" };
+        const vals = PHRASES_VOIX[k] || { fr: "", wo: "" };
+        const div = document.createElement("div");
+        div.className = "phrase-card";
+        div.innerHTML =
+            '<div class="phrase-titre">' + echapperHtml(info.titre) +
+            '<span>' + echapperHtml(info.label) + "</span></div>" +
+            '<label>Français</label>' +
+            '<textarea data-k="' + k + '" data-l="fr" rows="2">' + echapperHtml(vals.fr) + "</textarea>" +
+            '<label>Wolof</label>' +
+            '<textarea data-k="' + k + '" data-l="wo" rows="2">' + echapperHtml(vals.wo) + "</textarea>";
+        box.appendChild(div);
+    });
+}
+
+function lireFormAlertes() {
+    document.querySelectorAll("#alertes-body textarea").forEach(function (t) {
+        const k = t.dataset.k;
+        const l = t.dataset.l;
+        if (PHRASES_VOIX[k]) PHRASES_VOIX[k][l] = t.value;
+    });
+}
+
+function ouvrirAlertes() {
+    remplirFormAlertes();
+    $(`modal-alertes`).classList.add("open");
+    $(`modal-backdrop`).classList.add("visible");
+}
+
+function fermerAlertes() {
+    $(`modal-alertes`).classList.remove("open");
+    $(`modal-backdrop`).classList.remove("visible");
+}
+
+let toastTimer = null;
+function afficherToast(msg) {
+    const el = $(`toast`);
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add("visible");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+        el.classList.remove("visible");
+    }, 2600);
+}
+
+// ============================================================
 // EVENEMENTS UI
 // ============================================================
 
@@ -1186,6 +1384,32 @@ document.getElementById("cam-toggle").addEventListener("click", function () {
 });
 
 document.getElementById("reset-btn").addEventListener("click", resetCompteur);
+
+document.getElementById("bb-exercices").addEventListener("click", ouvrirFeuille);
+document.getElementById("exo-backdrop").addEventListener("click", fermerFeuille);
+document.getElementById("bb-reset").addEventListener("click", resetCompteur);
+document.getElementById("bb-focus").addEventListener("click", basculerFocus);
+document.getElementById("exit-focus").addEventListener("click", basculerFocus);
+
+document.getElementById("alertes-btn").addEventListener("click", ouvrirAlertes);
+document.getElementById("alertes-close").addEventListener("click", fermerAlertes);
+document.getElementById("modal-backdrop").addEventListener("click", fermerAlertes);
+
+document.getElementById("alertes-save").addEventListener("click", function () {
+    lireFormAlertes();
+    sauvegarderPhrases();
+    fermerAlertes();
+    afficherToast("Alertes personnalisées enregistrées");
+});
+
+document.getElementById("alertes-reset").addEventListener("click", function () {
+    try {
+        localStorage.removeItem(CLE_PHRASES);
+    } catch (e) {}
+    PHRASES_VOIX = chargerPhrases();
+    remplirFormAlertes();
+    afficherToast("Phrases par défaut restaurées");
+});
 
 document.getElementById("hist-toggle").addEventListener("click", function () {
     const corps = document.getElementById("hist-body");
@@ -1208,7 +1432,9 @@ document.getElementById("hist-clear").addEventListener("click", function () {
 // DEMARRAGE
 // ============================================================
 
-buildCards();
+construireSelecteur("exercises");
+construireSelecteur("exo-focus");
+construireSelecteur("sheet-selector");
 construireOptionsObjectif();
 construireOptionsRepos();
 configurerFps();
