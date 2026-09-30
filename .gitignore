@@ -1,10 +1,29 @@
+# Android / Gradle
+*.iml
+.gradle/
+.jdk17/
+.jdk21/
+/build
+/app/build
+local.properties
+.navigation/
+.captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aar
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+*.keystore
+
+# Python & Web
 venv/
 .venv/
 .dist/
 __pycache__/
 *.pyc
-.vscode/
-.idea/
 node_modules/
 .env
-.DS_Store
