@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "601581211703",
+    "project_id": "device-streaming-398a2593",
+    "storage_bucket": "device-streaming-398a2593.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:601581211703:android:ab59a65a35c0c0e4292fb2",
+        "android_client_info": {
+          "package_name": "com.repia.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDND91pUXbMgJUAO1o7dcpeQbntxRGO3g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

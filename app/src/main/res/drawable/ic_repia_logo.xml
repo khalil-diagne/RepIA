@@ -1,0 +1,64 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+  <!-- Background Dark Squircle -->
+  <path
+      android:fillColor="#151D2A"
+      android:pathData="M 24,8 L 84,8 A 16,16 0 0,1 100,24 L 100,84 A 16,16 0 0,1 84,100 L 24,100 A 16,16 0 0,1 8,84 L 8,24 A 16,16 0 0,1 24,8 Z" />
+
+  <!-- Outer Neon Ring (Camera Lens Frame) -->
+  <path
+      android:fillColor="#00000000"
+      android:strokeColor="#10B981"
+      android:strokeWidth="4"
+      android:pathData="M 54,18 A 36,36 0 1,1 53.9,18 Z" />
+
+  <!-- Inner Cyan Vision Ring -->
+  <path
+      android:fillColor="#00000000"
+      android:strokeColor="#06B6D4"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"
+      android:pathData="M 54,28 A 26,26 0 1,1 53.9,28 Z" />
+
+  <!-- Dumbbell / Weight Barbell Core -->
+  <!-- Left Weight Plate -->
+  <path
+      android:fillColor="#10B981"
+      android:pathData="M 32,42 L 38,42 A 2,2 0 0,1 40,44 L 40,64 A 2,2 0 0,1 38,66 L 32,66 A 2,2 0 0,1 30,64 L 30,44 A 2,2 0 0,1 32,42 Z" />
+
+  <!-- Right Weight Plate -->
+  <path
+      android:fillColor="#10B981"
+      android:pathData="M 70,42 L 76,42 A 2,2 0 0,1 78,44 L 78,64 A 2,2 0 0,1 76,66 L 70,66 A 2,2 0 0,1 68,64 L 68,44 A 2,2 0 0,1 70,42 Z" />
+
+  <!-- Center Barbell Shaft -->
+  <path
+      android:fillColor="#10B981"
+      android:pathData="M 38,51 L 70,51 L 70,57 L 38,57 Z" />
+
+  <!-- AI Joint Nodes Overlay (3 Nodes connected) -->
+  <path
+      android:fillColor="#00000000"
+      android:strokeColor="#06B6D4"
+      android:strokeWidth="2.5"
+      android:pathData="M 42,48 L 54,36 L 66,48" />
+
+  <!-- Center AI Node (Cyan Dot) -->
+  <path
+      android:fillColor="#06B6D4"
+      android:pathData="M 54,36 A 4,4 0 1,1 53.9,36 Z" />
+
+  <!-- Left AI Node (Emerald Dot) -->
+  <path
+      android:fillColor="#10B981"
+      android:pathData="M 42,48 A 3.5,3.5 0 1,1 41.9,48 Z" />
+
+  <!-- Right AI Node (Emerald Dot) -->
+  <path
+      android:fillColor="#10B981"
+      android:pathData="M 66,48 A 3.5,3.5 0 1,1 65.9,48 Z" />
+</vector>

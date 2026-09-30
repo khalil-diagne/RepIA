@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Material3.DayNight.NoActionBar" parent="android:Theme.Material.NoActionBar">
+        <!-- Fond Dark Space pour éviter tout flash blanc au lancement -->
+        <item name="android:windowBackground">#0B0F19</item>
+
+        <!-- Couleur de la barre de statut (Status Bar) -->
+        <item name="android:statusBarColor">#0B0F19</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Couleur de la barre de navigation du système (Navigation Bar) -->
+        <item name="android:navigationBarColor">#0B0F19</item>
+    </style>
+</resources>
