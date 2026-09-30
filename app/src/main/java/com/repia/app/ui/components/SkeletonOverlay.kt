@@ -11,16 +11,55 @@ import com.repia.app.ml.Point
 import com.repia.app.ui.theme.NeonCyan
 import com.repia.app.ui.theme.NeonEmerald
 
+fun mapPointToScreen(
+    pointX: Float,
+    pointY: Float,
+    screenWidth: Float,
+    screenHeight: Float,
+    isFrontCamera: Boolean = true,
+    imageWidth: Float = 480f,
+    imageHeight: Float = 640f
+): Offset {
+    val xNorm = if (isFrontCamera) 1f - pointX else pointX
+    val yNorm = pointY
+
+    val viewAspect = screenWidth / screenHeight
+    val imageAspect = imageWidth / imageHeight
+
+    val scaleX: Float
+    val scaleY: Float
+    val offsetX: Float
+    val offsetY: Float
+
+    if (viewAspect > imageAspect) {
+        scaleX = screenWidth
+        scaleY = screenWidth / imageAspect
+        offsetX = 0f
+        offsetY = (screenHeight - scaleY) / 2f
+    } else {
+        scaleY = screenHeight
+        scaleX = screenHeight * imageAspect
+        offsetX = (screenWidth - scaleX) / 2f
+        offsetY = 0f
+    }
+
+    val mappedX = offsetX + (xNorm * scaleX)
+    val mappedY = offsetY + (yNorm * scaleY)
+
+    return Offset(mappedX, mappedY)
+}
+
 @Composable
 fun SkeletonOverlay(
     points: List<Point>?,
     modifier: Modifier = Modifier,
-    qualityColor: Color = NeonEmerald
+    qualityColor: Color = NeonEmerald,
+    isFrontCamera: Boolean = true
 ) {
     Canvas(modifier = modifier.fillMaxSize()) {
         points?.let { pts ->
-            val width = size.width
-            val height = size.height
+            val screenWidth = size.width
+            val screenHeight = size.height
 
             // Bones (Connections)
             val connections = listOf(
@@ -37,8 +76,8 @@ fun SkeletonOverlay(
                     val p1 = pts[conn.first]
                     val p2 = pts[conn.second]
                     if (p1.visibility > 0.5f && p2.visibility > 0.5f) {
-                        val start = Offset(p1.x * width, p1.y * height)
-                        val end = Offset(p2.x * width, p2.y * height)
+                        val start = mapPointToScreen(p1.x, p1.y, screenWidth, screenHeight, isFrontCamera)
+                        val end = mapPointToScreen(p2.x, p2.y, screenWidth, screenHeight, isFrontCamera)
 
                         // 3D Tube Outer Glow Line
                         drawLine(
@@ -71,7 +110,7 @@ fun SkeletonOverlay(
             // 3D Sphere Joints
             for (p in pts) {
                 if (p.visibility > 0.5f) {
-                    val center = Offset(p.x * width, p.y * height)
+                    val center = mapPointToScreen(p.x, p.y, screenWidth, screenHeight, isFrontCamera)
 
                     // Outer 3D Sphere Glow
                     drawCircle(

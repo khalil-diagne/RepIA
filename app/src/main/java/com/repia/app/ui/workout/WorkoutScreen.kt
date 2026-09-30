@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.speech.tts.TextToSpeech
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -13,12 +14,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.*
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -26,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
@@ -33,10 +30,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +44,9 @@ import com.repia.app.ml.Point
 import com.repia.app.ml.PoseAnalyzer
 import com.repia.app.ml.RepetitionCounter
 import com.repia.app.ml.Stats
+import com.repia.app.ui.components.SkeletonOverlay
 import com.repia.app.ui.theme.*
+import java.util.Locale
 import java.util.concurrent.Executors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,6 +73,7 @@ fun WorkoutScreen(exerciseId: String, onBack: () -> Unit) {
         }
     }
 
+    var isFrontCamera by remember { mutableStateOf(true) }
     var stats by remember {
         mutableStateOf(Stats(exerciseId, exerciseId, 0, "haut", null, true))
     }
@@ -86,19 +84,39 @@ fun WorkoutScreen(exerciseId: String, onBack: () -> Unit) {
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
     val vibrator = remember { context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator }
 
+    // TextToSpeech for Voice Feedback
+    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
+
+    DisposableEffect(context) {
+        val textToSpeech = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                tts?.language = Locale.FRENCH
+            }
+        }
+        tts = textToSpeech
+        onDispose {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+    }
+
     var previousRepCount by remember { mutableStateOf(0) }
 
-    // Haptic feedback on rep increment
+    // Audio & Haptic feedback on rep increment
     LaunchedEffect(stats.compteur) {
         if (stats.compteur > previousRepCount) {
             previousRepCount = stats.compteur
             try {
+                // Haptic feedback
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator?.vibrate(VibrationEffect.createOneShot(70, VibrationEffect.DEFAULT_AMPLITUDE))
+                    vibrator?.vibrate(VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE))
                 } else {
                     @Suppress("DEPRECATION")
-                    vibrator?.vibrate(70)
+                    vibrator?.vibrate(80)
                 }
+
+                // Voice feedback in French
+                tts?.speak("${stats.compteur}", TextToSpeech.QUEUE_FLUSH, null, "rep_${stats.compteur}")
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -128,7 +146,9 @@ fun WorkoutScreen(exerciseId: String, onBack: () -> Unit) {
             // Camera Feed Preview
             AndroidView(
                 factory = { ctx ->
-                    val previewView = PreviewView(ctx)
+                    val previewView = PreviewView(ctx).apply {
+                        scaleType = PreviewView.ScaleType.FILL_CENTER
+                    }
                     val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
                     cameraProviderFuture.addListener({
                         val cameraProvider = cameraProviderFuture.get()
@@ -144,7 +164,11 @@ fun WorkoutScreen(exerciseId: String, onBack: () -> Unit) {
                                 }
                             }
 
-                        val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+                        val cameraSelector = if (isFrontCamera) {
+                            CameraSelector.DEFAULT_FRONT_CAMERA
+                        } else {
+                            CameraSelector.DEFAULT_BACK_CAMERA
+                        }
 
                         try {
                             cameraProvider.unbindAll()
@@ -160,72 +184,53 @@ fun WorkoutScreen(exerciseId: String, onBack: () -> Unit) {
                     }, ContextCompat.getMainExecutor(ctx))
                     previewView
                 },
+                update = { previewView ->
+                    // Re-bind when camera flips
+                    val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+                    cameraProviderFuture.addListener({
+                        val cameraProvider = cameraProviderFuture.get()
+                        val preview = Preview.Builder().build().also {
+                            it.setSurfaceProvider(previewView.surfaceProvider)
+                        }
+                        val imageAnalysis = ImageAnalysis.Builder()
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
+                            .also {
+                                poseAnalyzer?.let { analyzer ->
+                                    it.setAnalyzer(cameraExecutor, analyzer)
+                                }
+                            }
+
+                        val cameraSelector = if (isFrontCamera) {
+                            CameraSelector.DEFAULT_FRONT_CAMERA
+                        } else {
+                            CameraSelector.DEFAULT_BACK_CAMERA
+                        }
+
+                        try {
+                            cameraProvider.unbindAll()
+                            cameraProvider.bindToLifecycle(
+                                lifecycleOwner,
+                                cameraSelector,
+                                preview,
+                                imageAnalysis
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }, ContextCompat.getMainExecutor(context))
+                },
                 modifier = Modifier.fillMaxSize()
             )
 
-            // High-Tech Neon Skeleton Overlay
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                currentPoints?.let { points ->
-                    val width = size.width
-                    val height = size.height
+            // High-Tech Neon Skeleton Overlay with Exact Alignment
+            SkeletonOverlay(
+                points = currentPoints,
+                isFrontCamera = isFrontCamera,
+                qualityColor = if (stats.positionValide) NeonEmerald else NeonOrange
+            )
 
-                    // Bone Connections
-                    val connections = listOf(
-                        Pair(11, 12), // Shoulders
-                        Pair(11, 13), Pair(13, 15), // Left arm
-                        Pair(12, 14), Pair(14, 16), // Right arm
-                        Pair(11, 23), Pair(12, 24), Pair(23, 24), // Torso
-                        Pair(23, 25), Pair(25, 27), // Left leg
-                        Pair(24, 26), Pair(26, 28)  // Right leg
-                    )
-
-                    for (conn in connections) {
-                        if (conn.first < points.size && conn.second < points.size) {
-                            val p1 = points[conn.first]
-                            val p2 = points[conn.second]
-                            if (p1.visibility > 0.5f && p2.visibility > 0.5f) {
-                                // Outer Glow
-                                drawLine(
-                                    color = NeonEmerald.copy(alpha = 0.35f),
-                                    start = Offset(p1.x * width, p1.y * height),
-                                    end = Offset(p2.x * width, p2.y * height),
-                                    strokeWidth = 14f,
-                                    cap = StrokeCap.Round
-                                )
-                                // Inner Core Line
-                                drawLine(
-                                    color = NeonCyan,
-                                    start = Offset(p1.x * width, p1.y * height),
-                                    end = Offset(p2.x * width, p2.y * height),
-                                    strokeWidth = 6f,
-                                    cap = StrokeCap.Round
-                                )
-                            }
-                        }
-                    }
-
-                    // Joints
-                    for (p in points) {
-                        if (p.visibility > 0.5f) {
-                            val center = Offset(p.x * width, p.y * height)
-                            // Outer halo
-                            drawCircle(
-                                color = NeonEmerald.copy(alpha = 0.4f),
-                                radius = 16f,
-                                center = center
-                            )
-                            // Core point
-                            drawCircle(
-                                color = Color.White,
-                                radius = 7f,
-                                center = center
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Top Floating Navigation Bar
+            // Top Floating Navigation Bar with Camera Flip Button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -233,6 +238,7 @@ fun WorkoutScreen(exerciseId: String, onBack: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Back Button
                 Surface(
                     onClick = { showSummary = true },
                     shape = CircleShape,
@@ -245,6 +251,7 @@ fun WorkoutScreen(exerciseId: String, onBack: () -> Unit) {
                     }
                 }
 
+                // Exercise Name Pill
                 Surface(
                     shape = RoundedCornerShape(20.dp),
                     color = Color.Black.copy(alpha = 0.6f),
@@ -260,15 +267,31 @@ fun WorkoutScreen(exerciseId: String, onBack: () -> Unit) {
                     )
                 }
 
-                Surface(
-                    onClick = { showSummary = true },
-                    shape = CircleShape,
-                    color = Color.Black.copy(alpha = 0.6f),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, GlassBorder.copy(alpha = 0.6f)),
-                    modifier = Modifier.size(46.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Stop, contentDescription = "Terminer", tint = Color(0xFFEF4444))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Camera Switch Button (Flip Camera)
+                    Surface(
+                        onClick = { isFrontCamera = !isFrontCamera },
+                        shape = CircleShape,
+                        color = Color.Black.copy(alpha = 0.6f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.6f)),
+                        modifier = Modifier.size(46.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.Cameraswitch, contentDescription = "Changer de caméra", tint = NeonCyan)
+                        }
+                    }
+
+                    // Stop Button
+                    Surface(
+                        onClick = { showSummary = true },
+                        shape = CircleShape,
+                        color = Color.Black.copy(alpha = 0.6f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, GlassBorder.copy(alpha = 0.6f)),
+                        modifier = Modifier.size(46.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.Stop, contentDescription = "Terminer", tint = Color(0xFFEF4444))
+                        }
                     }
                 }
             }
